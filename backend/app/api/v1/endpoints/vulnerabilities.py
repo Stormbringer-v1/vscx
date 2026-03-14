@@ -79,3 +79,90 @@ async def search_vulnerability(
     )
     vulnerabilities = result.scalars().all()
     return {"vulnerabilities": vulnerabilities, "total": len(vulnerabilities)}
+
+
+@router.get("/enrich/{cve_id}")
+async def enrich_cve(
+    cve_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    from app.services.vulnerability_db import VulnerabilityService
+    from app.core.config import settings
+    
+    nvd_key = getattr(settings, 'NVD_API_KEY', None)
+    service = VulnerabilityService(nvd_api_key=nvd_key)
+    try:
+        result = await service.enrich_finding(cve_id)
+        return result
+    finally:
+        await service.close()
+
+
+@router.post("/enrich/batch")
+async def enrich_cves_batch(
+    cve_ids: List[str],
+    current_user: User = Depends(get_current_user)
+):
+    from app.services.vulnerability_db import VulnerabilityService
+    from app.core.config import settings
+    
+    nvd_key = getattr(settings, 'NVD_API_KEY', None)
+    service = VulnerabilityService(nvd_api_key=nvd_key)
+    try:
+        results = await service.enrich_findings_batch(cve_ids)
+        return {"enrichments": results}
+    finally:
+        await service.close()
+
+
+@router.get("/lookup/nvd/{cve_id}")
+async def lookup_nvd(
+    cve_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    from app.services.vulnerability_db import NVDClient
+    from app.core.config import settings
+    
+    nvd_key = getattr(settings, 'NVD_API_KEY', None)
+    client = NVDClient(nvd_api_key=nvd_key)
+    try:
+        result = await client.get_cve(cve_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="CVE not found in NVD")
+        return result
+    finally:
+        await client.close()
+
+
+@router.get("/lookup/osv/{cve_id}")
+async def lookup_osv(
+    cve_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    from app.services.vulnerability_db import OSVClient
+    
+    client = OSVClient()
+    try:
+        result = await client.get_vulnerability(cve_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="CVE not found in OSV")
+        return result
+    finally:
+        await client.close()
+
+
+@router.get("/lookup/epss/{cve_id}")
+async def lookup_epss(
+    cve_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    from app.services.vulnerability_db import EPSSClient
+    
+    client = EPSSClient()
+    try:
+        result = await client.get_score(cve_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="CVE not found in EPSS")
+        return result
+    finally:
+        await client.close()
