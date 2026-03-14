@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, Server, Scan, Bug, Settings, ChevronDown, Plus } from 'lucide-react'
 import { useProjects } from '../context/ProjectContext'
-import { projects } from '../lib/api'
+import { projects as projectsApi } from '../lib/api'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -21,7 +21,7 @@ export default function Sidebar() {
     e.preventDefault()
     if (!newProjectName.trim()) return
     try {
-      await projects.create({ name: newProjectName })
+      await projectsApi.create({ name: newProjectName })
       await refreshProjects()
       setNewProjectName('')
       setShowProjectForm(false)

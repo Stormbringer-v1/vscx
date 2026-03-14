@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { projects } from '../lib/api';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { projects as projectsApi } from '../lib/api';
 
 interface Project {
   id: number;
@@ -26,7 +26,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   const refreshProjects = async () => {
     try {
-      const response = await projects.list();
+      const response = await projectsApi.list();
       setProjects(response.data);
       if (response.data.length > 0 && !selectedProject) {
         setSelectedProject(response.data[0]);

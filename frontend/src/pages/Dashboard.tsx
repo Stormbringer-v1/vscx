@@ -3,6 +3,16 @@ import { Shield, Server, Bug, AlertTriangle, Activity } from 'lucide-react'
 import { findings, scans, assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
+interface Scan {
+  id: number
+  name: string
+  scan_type: string
+  targets: string
+  status: string
+  progress: number
+  created_at: string
+}
+
 export default function Dashboard() {
   const { selectedProject, projects } = useProjects()
 
@@ -26,7 +36,7 @@ export default function Dashboard() {
 
   const summary = summaryData?.data || { total: 0, by_severity: {}, by_status: {} }
   const assetsCount = assetsData?.data?.length || 0
-  const scansList = scansData?.data || []
+  const scansList: Scan[] = scansData?.data || []
 
   const recentScans = scansList.slice(0, 5)
   const totalRiskScore = summary.by_severity?.critical * 10 + 
