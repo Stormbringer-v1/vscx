@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, assets, scans, findings, projects, vulnerabilities
+from app.api.v1.endpoints import auth, assets, scans, findings, projects, vulnerabilities, ai
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router.include_router(assets.router)
 api_router.include_router(scans.router)
 api_router.include_router(findings.router)
 api_router.include_router(vulnerabilities.router)
+api_router.include_router(ai.router)
