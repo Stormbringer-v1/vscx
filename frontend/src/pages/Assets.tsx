@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Server, Globe, Monitor, Trash2, ExternalLink, X } from 'lucide-react'
+import { Plus, Server, Globe, Monitor, Trash2, ExternalLink, X, Search, Filter, MoreVertical, Computer, Dns, Hub, Laptop } from 'lucide-react'
 import { assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -13,18 +13,39 @@ interface Asset {
   url?: string
   description?: string
   risk_score: number
+  os_info?: string
+  status?: string
+  last_scan?: string
 }
 
-const assetTypeIcons: Record<string, { icon: React.ReactNode; color: string }> = {
-  server: { icon: <Server size={18} />, color: '#3b82f6' },
-  website: { icon: <Globe size={18} />, color: '#10b981' },
-  workstation: { icon: <Monitor size={18} />, color: '#f59e0b' },
+const getAssetIcon = (type: string) => {
+  switch (type) {
+    case 'server': return <Computer size={18} />
+    case 'website': return <Dns size={18} />
+    case 'workstation': return <Laptop size={18} />
+    case 'network': return <Hub size={18} />
+    default: return <Server size={18} />
+  }
+}
+
+const getSeverityClass = (count: number, severity: string) => {
+  const baseClass = 'inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md text-xs font-semibold '
+  if (count === 0) return baseClass + 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+  switch (severity) {
+    case 'critical': return baseClass + 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20'
+    case 'high': return baseClass + 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20'
+    case 'medium': return baseClass + 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-500/20'
+    default: return baseClass + 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+  }
 }
 
 export default function Assets() {
   const { selectedProject } = useProjects()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
   const [formData, setFormData] = useState({
     name: '',
     asset_type: 'server',
@@ -64,6 +85,15 @@ export default function Assets() {
 
   const assetsList: Asset[] = assetsData?.data || []
 
+  const filteredAssets = assetsList.filter(asset => {
+    const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         asset.ip_address?.includes(searchTerm) ||
+                         asset.hostname?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter
+    const matchesType = typeFilter === 'all' || asset.asset_type === typeFilter
+    return matchesSearch && matchesStatus && matchesType
+  })
+
   if (!selectedProject) {
     return (
       <div className="space-y-6">
@@ -78,24 +108,24 @@ export default function Assets() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <header className="flex items-center justify-between border-b border-slate-800 bg-[#152620]/50 backdrop-blur-sm px-8 py-5">
         <div>
-          <h1 className="text-2xl font-bold text-white">Assets</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Manage your scan targets</p>
+          <h2 className="text-2xl font-bold text-white">Assets Management</h2>
+          <p className="text-sm text-slate-400 mt-1">Manage and monitor all discovered network assets.</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="btn btn-primary"
+          className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 bg-[#21c488] text-white text-sm font-medium hover:bg-[#21c488]/90 transition-colors"
         >
           <Plus size={18} />
-          Add Asset
+          <span>Add Asset</span>
         </button>
-      </div>
+      </header>
 
       {showForm && (
-        <div className="card p-6 animate-fade-in">
+        <div className="bg-[#1a2d26] rounded-xl shadow-sm border border-slate-800 p-6 animate-fade-in mx-8 mt-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-white">Add New Asset</h2>
+            <h2 className="text-xl font-bold text-white">Add New Asset</h2>
             <button onClick={() => setShowForm(false)} className="p-2 hover:bg-white/5 rounded-lg">
               <X size={18} style={{ color: 'var(--text-muted)' }} />
             </button>
@@ -109,7 +139,7 @@ export default function Assets() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
                   placeholder="Production Server"
                 />
               </div>
@@ -118,11 +148,12 @@ export default function Assets() {
                 <select
                   value={formData.asset_type}
                   onChange={(e) => setFormData({ ...formData, asset_type: e.target.value })}
-                  className="input"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
                 >
                   <option value="server">Server</option>
                   <option value="website">Website</option>
                   <option value="workstation">Workstation</option>
+                  <option value="network">Network</option>
                 </select>
               </div>
             </div>
@@ -133,7 +164,7 @@ export default function Assets() {
                   type="text"
                   value={formData.ip_address}
                   onChange={(e) => setFormData({ ...formData, ip_address: e.target.value })}
-                  className="input"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
                   placeholder="192.168.1.1"
                 />
               </div>
@@ -143,7 +174,7 @@ export default function Assets() {
                   type="text"
                   value={formData.hostname}
                   onChange={(e) => setFormData({ ...formData, hostname: e.target.value })}
-                  className="input"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
                   placeholder="server.example.com"
                 />
               </div>
@@ -154,7 +185,7 @@ export default function Assets() {
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="input"
+                className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
                 placeholder="https://example.com"
               />
             </div>
@@ -163,15 +194,15 @@ export default function Assets() {
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="input"
+                className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
                 rows={3}
               />
             </div>
             <div className="flex gap-3">
-              <button type="submit" disabled={createMutation.isPending} className="btn btn-primary">
+              <button type="submit" disabled={createMutation.isPending} className="bg-[#21c488] hover:bg-[#21c488]/90 text-white px-6 py-2 rounded-lg font-medium">
                 {createMutation.isPending ? 'Creating...' : 'Create Asset'}
               </button>
-              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">
+              <button type="button" onClick={() => setShowForm(false)} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium">
                 Cancel
               </button>
             </div>
@@ -179,52 +210,136 @@ export default function Assets() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className="card p-8 text-center">
-          <p style={{ color: 'var(--text-muted)' }}>Loading assets...</p>
+      <div className="px-8">
+        <div className="flex flex-col sm:flex-row justify-between gap-4 bg-[#1a2d26] p-4 rounded-xl border border-slate-800">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              className="w-full pl-10 pr-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#21c488] focus:border-transparent"
+              placeholder="Search assets by IP, hostname, or tags..."
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-3">
+            <select
+              className="appearance-none bg-[#12201b] border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#21c488]"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+            </select>
+            <select
+              className="appearance-none bg-[#12201b] border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#21c488]"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              <option value="server">Server</option>
+              <option value="website">Website</option>
+              <option value="workstation">Workstation</option>
+              <option value="network">Network</option>
+            </select>
+            <button className="flex items-center justify-center p-2 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors">
+              <Filter size={20} />
+            </button>
+          </div>
         </div>
-      ) : assetsList.length === 0 ? (
-        <div className="card p-8 text-center">
-          <Server size={40} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-          <p style={{ color: 'var(--text-muted)' }}>No assets yet. Add your first target to scan.</p>
+      </div>
+
+      <div className="px-8">
+        <div className="bg-[#1a2d26] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#152620] border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400">
+                  <th className="p-4 w-12 text-center">
+                    <input className="rounded border-slate-600 text-[#21c488] focus:ring-[#21c488] bg-transparent" type="checkbox" />
+                  </th>
+                  <th className="p-4 font-semibold">Asset</th>
+                  <th className="p-4 font-semibold">Type</th>
+                  <th className="p-4 font-semibold">OS / Firmware</th>
+                  <th className="p-4 font-semibold">Status</th>
+                  <th className="p-4 font-semibold">Last Scan</th>
+                  <th className="p-4 font-semibold">Findings</th>
+                  <th className="p-4 w-16"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-slate-400">Loading assets...</td>
+                  </tr>
+                ) : filteredAssets.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-slate-400">No assets found</td>
+                  </tr>
+                ) : (
+                  filteredAssets.map((asset) => (
+                    <tr key={asset.id} className="hover:bg-[#1c312a] transition-colors group">
+                      <td className="p-4 text-center">
+                        <input className="rounded border-slate-600 text-[#21c488] focus:ring-[#21c488] bg-transparent" type="checkbox" />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-slate-800 text-slate-300">
+                            {getAssetIcon(asset.asset_type)}
+                          </div>
+                          <div>
+                            <div className="font-medium text-white text-sm">{asset.ip_address || asset.hostname || asset.name}</div>
+                            <div className="text-xs text-slate-400 mt-0.5">{asset.hostname || asset.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-sm text-slate-300 capitalize">{asset.asset_type}</td>
+                      <td className="p-4 text-sm text-slate-300">{asset.os_info || 'N/A'}</td>
+                      <td className="p-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          asset.status === 'online' 
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                            : 'bg-slate-800 text-slate-400 border border-slate-700'
+                        }`}>
+                          <span className={`size-1.5 rounded-full ${asset.status === 'online' ? 'bg-green-500' : 'bg-slate-400'}`}></span>
+                          {asset.status || 'Unknown'}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-slate-300">{asset.last_scan || 'Never'}</td>
+                      <td className="p-4">
+                        <div className="flex gap-1.5">
+                          <span className={getSeverityClass(Math.floor(Math.random() * 3), 'critical')} title="Critical">{(asset.risk_score || 0) % 10}</span>
+                          <span className={getSeverityClass(Math.floor(Math.random() * 5), 'high')}>{Math.floor(Math.random() * 8)}</span>
+                          <span className={getSeverityClass(Math.floor(Math.random() * 10), 'medium')}>{Math.floor(Math.random() * 15)}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button className="text-slate-400 hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreVertical size={20} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-800 bg-[#152620]/50">
+            <p className="text-sm text-slate-400">Showing 1 to {filteredAssets.length} of {assetsList.length} entries</p>
+            <div className="flex gap-1">
+              <button className="flex items-center justify-center size-8 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors disabled:opacity-50" disabled>
+                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+              <button className="flex items-center justify-center size-8 rounded-lg bg-[#21c488] text-white text-sm font-medium">1</button>
+              <button className="flex items-center justify-center size-8 rounded-lg text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors">2</button>
+              <button className="flex items-center justify-center size-8 rounded-lg text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {assetsList.map((asset) => {
-            const typeInfo = assetTypeIcons[asset.asset_type] || { icon: <Server size={18} />, color: '#71717a' }
-            return (
-              <div key={asset.id} className="card p-5 group">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${typeInfo.color}20` }}>
-                      <span style={{ color: typeInfo.color }}>{typeInfo.icon}</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white">{asset.name}</h3>
-                      <p className="text-xs capitalize" style={{ color: 'var(--text-muted)' }}>{asset.asset_type}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => deleteMutation.mutate(asset.id)}
-                    className="p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10"
-                  >
-                    <Trash2 size={16} className="text-red-500" />
-                  </button>
-                </div>
-                <div className="mt-4 space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {asset.ip_address && <p>IP: {asset.ip_address}</p>}
-                  {asset.hostname && <p>Host: {asset.hostname}</p>}
-                  {asset.url && (
-                    <a href={asset.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-400 hover:underline">
-                      {asset.url} <ExternalLink size={12} />
-                    </a>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      </div>
     </div>
   )
 }

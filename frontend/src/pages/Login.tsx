@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Shield, Mail, Lock, User, AlertCircle, ArrowRight } from 'lucide-react'
+import { Shield, Lock, AlertCircle, ArrowRight, Visibility, VisibilityOff } from 'lucide-react'
 import { auth } from '../lib/api'
 
 export default function Login() {
   const navigate = useNavigate()
   const [isRegister, setIsRegister] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -37,106 +39,134 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-[#09090b] to-[#09090b]" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzRjNGNDYiIGZpbGwtb3BhY2l0eT0iMC4yIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnY0aDF6bTAtOGgydjJoLTJ6bTgtOGgydjJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
-
-      <div className="relative z-10 w-full max-w-md p-8 animate-fade-in">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5" style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
-            <Shield size={32} className="text-white" />
+    <div className="min-h-screen flex flex-col bg-slate-950">
+      <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-800 px-10 py-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 text-[#21c45d] flex items-center justify-center">
+            <Shield size={24} />
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">vscx</h1>
-          <p className="mt-3 text-lg" style={{ color: 'var(--text-secondary)' }}>
-            {isRegister ? 'Create your account' : 'Welcome back'}
-          </p>
+          <h2 className="text-slate-100 text-xl font-bold tracking-tight">VSX</h2>
         </div>
+        <div className="flex items-center gap-4">
+          <a className="text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors" href="#">Documentation</a>
+          <a className="text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors" href="#">Support</a>
+        </div>
+      </header>
 
-        <div className="card p-8" style={{ background: 'rgba(28, 28, 31, 0.6)', backdropFilter: 'blur(20px)' }}>
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md bg-slate-800/80 backdrop-blur-md rounded-xl border border-slate-700/50 shadow-2xl p-8 flex flex-col gap-6">
+          <div className="flex flex-col gap-2 text-center">
+            <h1 className="text-slate-100 text-3xl font-black tracking-tight">VSX Login</h1>
+            <p className="text-slate-400 text-sm font-normal">Vulnerability Management Platform</p>
+          </div>
+
           {error && (
-            <div className="mb-6 p-4 rounded-xl flex items-center gap-3 animate-fade-in" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <div className="p-4 rounded-lg flex items-center gap-3" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
               <AlertCircle size={18} className="text-red-400 flex-shrink-0" />
               <span className="text-sm text-red-300">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-2.5" style={{ color: 'var(--text-secondary)' }}>Username</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--text-muted)' }} />
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1">
+              <label className="text-slate-200 text-sm font-medium ml-1" htmlFor="username">Username</label>
+              <div className="relative flex items-center">
                 <input
                   type="text"
+                  id="username"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="input pl-11"
-                  placeholder="username"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#21c45d] focus:ring-1 focus:ring-[#21c45d] transition-all text-sm"
+                  placeholder="Enter your username"
                   required
                 />
               </div>
             </div>
 
             {isRegister && (
-              <div className="animate-fade-in">
-                <label className="block text-sm font-medium mb-2.5" style={{ color: 'var(--text-secondary)' }}>Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--text-muted)' }} />
+              <div className="flex flex-col gap-1 animate-fade-in">
+                <label className="text-slate-200 text-sm font-medium ml-1" htmlFor="email">Email</label>
+                <div className="relative flex items-center">
                   <input
                     type="email"
+                    id="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="input pl-11"
-                    placeholder="you@example.com"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#21c45d] focus:ring-1 focus:ring-[#21c45d] transition-all text-sm"
+                    placeholder="Enter your email address"
                     required={isRegister}
                   />
                 </div>
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium mb-2.5" style={{ color: 'var(--text-secondary)' }}>Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--text-muted)' }} />
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-slate-200 text-sm font-medium" htmlFor="password">Password</label>
+                <a className="text-xs font-medium text-[#21c45d] hover:text-[#21c45d]/80 transition-colors" href="#">Forgot Password?</a>
+              </div>
+              <div className="relative flex items-center">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="input pl-11"
-                  placeholder="••••••••"
+                  className="w-full pl-12 pr-12 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#21c45d] focus:ring-1 focus:ring-[#21c45d] transition-all text-sm"
+                  placeholder="Enter your password"
                   required
                   minLength={6}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-slate-400 hover:text-slate-200 focus:outline-none flex items-center justify-center"
+                >
+                  {showPassword ? <VisibilityOff size={20} /> : <Visibility size={20} />}
+                </button>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-600 bg-slate-900/50 text-[#21c45d] focus:ring-[#21c45d] focus:ring-offset-0 focus:ring-1 transition-colors cursor-pointer"
+              />
+              <label className="text-slate-300 text-sm font-normal cursor-pointer select-none" htmlFor="remember">Remember me</label>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn btn-primary py-3.5 text-base relative overflow-hidden group"
+              className="w-full bg-[#21c45d] hover:bg-[#21c45d]/90 text-slate-900 font-bold py-3 px-4 rounded-lg mt-2 transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'}
-                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-              </span>
+              <span>{loading ? 'Please wait...' : 'Sign In'}</span>
+              <ArrowRight size={20} />
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => {
-                setIsRegister(!isRegister)
-                setError('')
-              }}
-              className="text-sm transition-colors hover:underline"
-              style={{ color: 'var(--accent-primary)' }}
-            >
-              {isRegister
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Register"}
-            </button>
+          <div className="mt-4 pt-6 border-t border-slate-700/50 text-center">
+            <p className="text-slate-400 text-sm">
+              {isRegister ? 'Already have an account? ' : "Don't have an account? "}
+              <button
+                onClick={() => {
+                  setIsRegister(!isRegister)
+                  setError('')
+                }}
+                className="text-[#21c45d] hover:underline font-medium"
+              >
+                {isRegister ? 'Sign In' : 'Request Access'}
+              </button>
+            </p>
           </div>
         </div>
-      </div>
+      </main>
+
+      <footer className="py-6 text-center">
+        <p className="text-slate-500 text-xs">© 2024 VSX Platform. All rights reserved.</p>
+      </footer>
     </div>
   )
 }

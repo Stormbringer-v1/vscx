@@ -1,141 +1,154 @@
-import { Settings as SettingsIcon, Shield, Database, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { Settings as SettingsIcon, Shield, Database, Zap, Save, Bell, Key, Globe } from 'lucide-react'
 
 export default function Settings() {
+  const [orgName, setOrgName] = useState('Security Team Alpha')
+  const [timezone, setTimezone] = useState('UTC')
+  const [dateFormat, setDateFormat] = useState('YYYY-MM-DD')
+  const [scanProfile, setScanProfile] = useState('standard')
+  const [concurrentScans, setConcurrentScans] = useState(5)
+  const [nmapOptions, setNmapOptions] = useState('-sS -sV -O --top-ports 1000')
+  const [selectedTemplates, setSelectedTemplates] = useState(['cves', 'vulnerabilities', 'exposures'])
+
+  const templates = ['cves', 'vulnerabilities', 'exposures', 'misconfigurations', 'default-logins', 'takeovers']
+
+  const toggleTemplate = (template: string) => {
+    if (selectedTemplates.includes(template)) {
+      setSelectedTemplates(selectedTemplates.filter(t => t !== template))
+    } else {
+      setSelectedTemplates([...selectedTemplates, template])
+    }
+  }
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Configure your scanner</p>
+    <div className="space-y-6 animate-fade-in pb-20">
+      <div className="px-8 pt-8">
+        <h1 className="text-3xl md:text-4xl font-black leading-tight text-white">Settings</h1>
+        <p className="text-slate-400 text-base mt-2">Configure VSX Vulnerability Management Platform settings.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="card p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
-              <Shield size={24} style={{ color: '#10b981' }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Scanner Configuration</h3>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Configure scan settings</p>
+      <div className="px-8 grid grid-cols-1 gap-8">
+        <section className="bg-[#1a3324] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-800">
+            <h2 className="text-xl font-bold text-white">General</h2>
+            <p className="text-slate-400 text-sm mt-1">Basic platform configuration.</p>
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <label className="flex flex-col">
+                <span className="text-slate-300 text-sm font-medium mb-2">Organization Name</span>
+                <input 
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  type="text" 
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                />
+              </label>
+              <label className="flex flex-col">
+                <span className="text-slate-300 text-sm font-medium mb-2">Timezone</span>
+                <select 
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                >
+                  <option>UTC (Coordinated Universal Time)</option>
+                  <option>America/New_York (EST/EDT)</option>
+                  <option>America/Los_Angeles (PST/PDT)</option>
+                  <option>Europe/London (GMT/BST)</option>
+                </select>
+              </label>
+              <label className="flex flex-col">
+                <span className="text-slate-300 text-sm font-medium mb-2">Date Format</span>
+                <select 
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  value={dateFormat}
+                  onChange={(e) => setDateFormat(e.target.value)}
+                >
+                  <option>YYYY-MM-DD (e.g., 2023-10-27)</option>
+                  <option>MM/DD/YYYY (e.g., 10/27/2023)</option>
+                  <option>DD/MM/YYYY (e.g., 27/10/2023)</option>
+                </select>
+              </label>
             </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">Nmap</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Port & service discovery</p>
-              </div>
-              <span className="badge badge-info">Enabled</span>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">Nuclei</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Vulnerability scanning</p>
-              </div>
-              <span className="badge badge-info">Enabled</span>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">Trivy</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Container security</p>
-              </div>
-              <span className="badge badge-info">Enabled</span>
-            </div>
-          </div>
-        </div>
+        </section>
 
-        <div className="card p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(59, 130, 246, 0.15)' }}>
-              <Database size={24} style={{ color: '#3b82f6' }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Vulnerability Databases</h3>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>External sources</p>
-            </div>
+        <section className="bg-[#1a3324] rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-800">
+            <h2 className="text-xl font-bold text-white">Scan Configuration</h2>
+            <p className="text-slate-400 text-sm mt-1">Default behavior for vulnerability scans.</p>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">NVD (National Vulnerability Database)</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>CVE information</p>
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <label className="flex flex-col">
+                <span className="text-slate-300 text-sm font-medium mb-2">Default Scan Profile</span>
+                <select 
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  value={scanProfile}
+                  onChange={(e) => setScanProfile(e.target.value)}
+                >
+                  <option>Comprehensive (Slow)</option>
+                  <option>Standard (Balanced)</option>
+                  <option>Quick (Fast)</option>
+                  <option>Custom Profile Alpha</option>
+                </select>
+              </label>
+              <div className="flex flex-col justify-center">
+                <label className="flex flex-col">
+                  <span className="text-slate-300 text-sm font-medium mb-2 flex justify-between">
+                    <span>Concurrent Scans</span>
+                    <span className="text-[#1acb5b] font-bold">{concurrentScans}</span>
+                  </span>
+                  <input 
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#1acb5b]"
+                    type="range" 
+                    min="1" 
+                    max="10" 
+                    value={concurrentScans}
+                    onChange={(e) => setConcurrentScans(parseInt(e.target.value))}
+                  />
+                  <div className="flex justify-between text-xs text-slate-400 mt-2">
+                    <span>1</span>
+                    <span>10</span>
+                  </div>
+                </label>
               </div>
-              <span className="badge badge-info">Connected</span>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">OSV (Open Source Vulnerabilities)</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Package vulnerabilities</p>
-              </div>
-              <span className="badge badge-info">Connected</span>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">EPSS (Exploit Prediction)</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Exploit probability scores</p>
-              </div>
-              <span className="badge badge-info">Connected</span>
-            </div>
+            <label className="flex flex-col">
+              <span className="text-slate-300 text-sm font-medium mb-2">Custom Nmap Options</span>
+              <input 
+                className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4 font-mono text-sm"
+                type="text" 
+                value={nmapOptions}
+                onChange={(e) => setNmapOptions(e.target.value)}
+              />
+            </label>
+            <label className="flex flex-col">
+              <span className="text-slate-300 text-sm font-medium mb-2">Nuclei Templates Selector</span>
+              <select 
+                className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-32 px-4 py-2"
+                multiple
+                value={selectedTemplates}
+                onChange={(e) => {
+                  const options = Array.from(e.target.selectedOptions, option => option.value)
+                  setSelectedTemplates(options)
+                }}
+              >
+                {templates.map(template => (
+                  <option key={template} value={template}>{template}</option>
+                ))}
+              </select>
+              <span className="text-xs text-slate-400 mt-1">Hold Cmd/Ctrl to select multiple.</span>
+            </label>
           </div>
-        </div>
+        </section>
+      </div>
 
-        <div className="card p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(168, 85, 247, 0.15)' }}>
-              <Zap size={24} style={{ color: '#a855f7' }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">AI Features</h3>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Machine learning powered</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">Remediation Suggestions</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>AI-powered fix recommendations</p>
-              </div>
-              <span className="badge badge-info">Available</span>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-              <div>
-                <p className="text-sm font-medium text-white">Report Generation</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Executive summaries</p>
-              </div>
-              <span className="badge badge-info">Available</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245, 158, 11, 0.15)' }}>
-              <SettingsIcon size={24} color="#f59e0b" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">About</h3>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Application info</p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span style={{ color: 'var(--text-muted)' }}>Version</span>
-              <span className="text-white">0.1.0</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: 'var(--text-muted)' }}>Backend</span>
-              <span className="text-white">FastAPI + PostgreSQL</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: 'var(--text-muted)' }}>Frontend</span>
-              <span className="text-white">React + Tailwind</span>
-            </div>
-            <div className="flex justify-between">
-              <span style={{ color: 'var(--text-muted)' }}>Queue</span>
-              <span className="text-white">Celery + Redis</span>
-            </div>
-          </div>
-        </div>
+      <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-[#15291d] border-t border-slate-800 p-4 md:px-8 flex justify-end z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <button className="bg-[#1acb5b] hover:bg-[#1acb5b]/90 text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2">
+          <Save size={18} />
+          Save Changes
+        </button>
       </div>
     </div>
   )

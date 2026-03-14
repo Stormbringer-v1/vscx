@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Shield, Server, Bug, AlertTriangle, Activity, TrendingUp } from 'lucide-react'
+import { Shield, Server, Bug, AlertTriangle, Activity, TrendingUp, TrendingDown, FileText, Plus, MoreVertical } from 'lucide-react'
 import { findings, scans, assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -36,16 +36,16 @@ export default function Dashboard() {
   const assetsCount = assetsData?.data?.length || 0
   const scansList: Scan[] = scansData?.data || []
 
-  const recentScans = scansList.slice(0, 5)
+  const recentScans = scansList.slice(0, 4)
   const totalRiskScore = (summary.by_severity?.critical || 0) * 10 + 
                           (summary.by_severity?.high || 0) * 5 + 
                           (summary.by_severity?.medium || 0) * 2 || 0
 
   const stats = [
-    { label: 'Total Assets', value: assetsCount, icon: Server, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
-    { label: 'Vulnerabilities', value: summary.total, icon: Bug, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
-    { label: 'Critical Issues', value: summary.by_severity?.critical || 0, icon: AlertTriangle, color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)' },
-    { label: 'Risk Score', value: totalRiskScore, icon: TrendingUp, color: totalRiskScore > 50 ? '#ef4444' : totalRiskScore > 20 ? '#f59e0b' : '#10b981', bg: totalRiskScore > 50 ? 'rgba(239, 68, 68, 0.15)' : totalRiskScore > 20 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)' },
+    { label: 'Total Assets', value: assetsCount, icon: Server, trend: '+5%', trendUp: true },
+    { label: 'Active Scans', value: scansList.filter(s => s.status === 'running').length, icon: Activity, trend: '+2%', trendUp: true },
+    { label: 'Open Findings', value: summary.total, icon: Bug, trend: '-15%', trendUp: false },
+    { label: 'Risk Score', value: 72, icon: TrendingDown, trend: '-3%', trendUp: false },
   ]
 
   if (!selectedProject) {
@@ -72,93 +72,126 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p style={{ color: 'var(--text-muted)' }}>{selectedProject.name} Overview</p>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h2 className="text-white text-3xl font-bold leading-tight">Vulnerability Dashboard</h2>
+        <div className="flex gap-3">
+          <button className="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-[#1e293b] text-white hover:bg-slate-700 transition-colors text-sm font-semibold border border-slate-700">
+            <FileText size={18} />
+            Generate Report
+          </button>
+          <button className="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-[#22c55e] text-slate-900 hover:bg-[#22c55e]/90 transition-colors text-sm font-bold shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+            <Plus size={18} />
+            New Scan
+          </button>
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="card p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{label}</p>
-                <p className="text-3xl font-bold mt-1 text-white">{value}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: bg }}>
-                <Icon size={24} style={{ color }} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white">Vulnerability Breakdown</h3>
-          </div>
-          <div className="space-y-4">
-            {['critical', 'high', 'medium', 'low', 'info'].map((severity) => {
-              const count = summary.by_severity?.[severity] || 0
-              const percentage = summary.total > 0 ? (count / summary.total) * 100 : 0
-              const colors: Record<string, string> = {
-                critical: '#a855f7',
-                high: '#ef4444',
-                medium: '#f59e0b',
-                low: '#3b82f6',
-                info: '#71717a'
-              }
-              return (
-                <div key={severity}>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="capitalize" style={{ color: 'var(--text-secondary)' }}>{severity}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>{count} ({percentage.toFixed(1)}%)</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${percentage}%`, background: colors[severity] }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
+          <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Assets</p>
+          <div className="flex items-end justify-between">
+            <p className="text-white text-3xl font-bold leading-none">{assetsCount}</p>
+            <p className="text-[#22c55e] flex items-center text-sm font-semibold bg-[#22c55e]/10 px-2 py-1 rounded">
+              <TrendingUp size={14} className="mr-1" /> +5%
+            </p>
           </div>
         </div>
-
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-white">
-              <Activity size={18} className="inline mr-2" style={{ color: 'var(--accent-primary)' }} />
-              Recent Scans
-            </h3>
+        <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
+          <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Active Scans</p>
+          <div className="flex items-end justify-between">
+            <p className="text-white text-3xl font-bold leading-none">{scansList.filter(s => s.status === 'running').length}</p>
+            <p className="text-[#22c55e] flex items-center text-sm font-semibold bg-[#22c55e]/10 px-2 py-1 rounded">
+              <TrendingUp size={14} className="mr-1" /> +2%
+            </p>
           </div>
-          {recentScans.length === 0 ? (
-            <div className="text-center py-8">
-              <Activity size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-              <p style={{ color: 'var(--text-muted)' }}>No scans yet. Start your first scan.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentScans.map((scan) => (
-                <div key={scan.id} className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'var(--bg-tertiary)' }}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${scan.status === 'completed' ? 'bg-green-500' : scan.status === 'running' ? 'bg-blue-500 animate-pulse' : scan.status === 'failed' ? 'bg-red-500' : 'bg-gray-500'}`} />
-                    <div>
-                      <p className="text-sm font-medium text-white">{scan.name}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(scan.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <span className={`badge ${scan.status === 'completed' ? 'badge-info' : scan.status === 'running' ? 'badge-medium' : scan.status === 'failed' ? 'badge-high' : 'badge-info'}`}>
-                    {scan.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
+        <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
+          <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Open Findings</p>
+          <div className="flex items-end justify-between">
+            <p className="text-white text-3xl font-bold leading-none">{summary.total}</p>
+            <p className="text-red-400 flex items-center text-sm font-semibold bg-red-400/10 px-2 py-1 rounded">
+              <TrendingDown size={14} className="mr-1" /> -15%
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
+          <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Risk Score</p>
+          <div className="flex items-end justify-between">
+            <p className="text-white text-3xl font-bold leading-none">{totalRiskScore}</p>
+            <p className="text-red-400 flex items-center text-sm font-semibold bg-red-400/10 px-2 py-1 rounded">
+              <TrendingDown size={14} className="mr-1" /> -3%
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <section className="lg:col-span-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white text-lg font-bold">Vulnerability Trend</h3>
+            <select className="bg-[#0b1120] border border-slate-700 text-slate-300 text-sm rounded-lg p-2">
+              <option>Last 30 Days</option>
+              <option>Last 90 Days</option>
+              <option>Year to Date</option>
+            </select>
+          </div>
+          <div className="flex-1 min-h-[300px] w-full bg-[#0b1120]/50 rounded-lg flex items-center justify-center border border-slate-800 border-dashed relative overflow-hidden">
+            <div className="absolute inset-0 flex items-end px-8 pb-8 pt-12 justify-between gap-2 opacity-50">
+              <div className="w-full bg-red-500/20 rounded-t h-[40%]"></div>
+              <div className="w-full bg-red-500/20 rounded-t h-[60%]"></div>
+              <div className="w-full bg-red-500/20 rounded-t h-[45%]"></div>
+              <div className="w-full bg-red-500/20 rounded-t h-[75%]"></div>
+              <div className="w-full bg-red-500/20 rounded-t h-[50%]"></div>
+              <div className="w-full bg-red-500/20 rounded-t h-[80%]"></div>
+              <div className="w-full bg-red-500/20 rounded-t h-[65%]"></div>
+            </div>
+            <p className="text-slate-500 font-medium z-10">Trend Chart Visualization</p>
+          </div>
+        </section>
+
+        <section className="lg:col-span-1 rounded-xl bg-[#1e293b] border border-slate-800 flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-white text-lg font-bold">Recent Scans</h3>
+            <a className="text-[#22c55e] text-sm font-medium hover:underline" href="#">View All</a>
+          </div>
+          <div className="flex-1 overflow-auto p-2">
+            <table className="w-full text-left text-sm">
+              <tbody className="divide-y divide-slate-800">
+                {recentScans.length === 0 ? (
+                  <tr>
+                    <td className="p-4 text-center text-slate-400">No scans yet</td>
+                  </tr>
+                ) : (
+                  recentScans.map((scan) => (
+                    <tr key={scan.id} className="hover:bg-[#0b1120]/50 transition-colors">
+                      <td className="p-4">
+                        <div className="flex flex-col">
+                          <span className="text-white font-semibold">{scan.name}</span>
+                          <span className="text-slate-400 text-xs">{scan.scan_type}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-right">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          scan.status === 'completed' ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20' :
+                          scan.status === 'running' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                          scan.status === 'failed' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                          'bg-slate-700 text-slate-300'
+                        }`}>
+                          {scan.status === 'running' && <Activity size={12} className="mr-1 animate-spin" />}
+                          {scan.status}
+                        </span>
+                        <div className="text-slate-500 text-xs mt-1">
+                          {new Date(scan.created_at).toLocaleDateString()}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </div>
   )
