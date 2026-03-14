@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Server, Globe, Monitor, Trash2, ExternalLink } from 'lucide-react'
+import { Plus, Server, Globe, Monitor, Trash2, ExternalLink, X } from 'lucide-react'
 import { assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -13,13 +13,12 @@ interface Asset {
   url?: string
   description?: string
   risk_score: number
-  created_at: string
 }
 
-const assetTypeIcons: Record<string, React.ReactNode> = {
-  server: <Server size={18} />,
-  website: <Globe size={18} />,
-  workstation: <Monitor size={18} />,
+const assetTypeIcons: Record<string, { icon: React.ReactNode; color: string }> = {
+  server: { icon: <Server size={18} />, color: '#3b82f6' },
+  website: { icon: <Globe size={18} />, color: '#10b981' },
+  workstation: { icon: <Monitor size={18} />, color: '#f59e0b' },
 }
 
 export default function Assets() {
@@ -68,24 +67,25 @@ export default function Assets() {
   if (!selectedProject) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Assets</h1>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-          <p className="text-gray-500">Please create a project first to add assets.</p>
+        <h1 className="text-2xl font-bold text-white">Assets</h1>
+        <div className="card p-8 text-center">
+          <Server size={40} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+          <p style={{ color: 'var(--text-muted)' }}>Please select a project to manage assets.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Assets</h1>
-          <p className="text-gray-500">Manage your scan targets</p>
+          <h1 className="text-2xl font-bold text-white">Assets</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Manage your scan targets</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700"
+          className="btn btn-primary"
         >
           <Plus size={18} />
           Add Asset
@@ -93,27 +93,32 @@ export default function Assets() {
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold mb-4">Add New Asset</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+        <div className="card p-6 animate-fade-in">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-white">Add New Asset</h2>
+            <button onClick={() => setShowForm(false)} className="p-2 hover:bg-white/5 rounded-lg">
+              <X size={18} style={{ color: 'var(--text-muted)' }} />
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="input"
                   placeholder="Production Server"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Type</label>
                 <select
                   value={formData.asset_type}
                   onChange={(e) => setFormData({ ...formData, asset_type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="input"
                 >
                   <option value="server">Server</option>
                   <option value="website">Website</option>
@@ -121,60 +126,52 @@ export default function Assets() {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>IP Address</label>
                 <input
                   type="text"
                   value={formData.ip_address}
                   onChange={(e) => setFormData({ ...formData, ip_address: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="input"
                   placeholder="192.168.1.1"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Hostname</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Hostname</label>
                 <input
                   type="text"
                   value={formData.hostname}
                   onChange={(e) => setFormData({ ...formData, hostname: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="input"
                   placeholder="server.example.com"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>URL</label>
               <input
                 type="url"
-              value={formData.url}
+                value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="input"
                 placeholder="https://example.com"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                rows={2}
+                className="input"
+                rows={3}
               />
             </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={createMutation.isPending}
-                className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 disabled:opacity-50"
-              >
+            <div className="flex gap-3">
+              <button type="submit" disabled={createMutation.isPending} className="btn btn-primary">
                 {createMutation.isPending ? 'Creating...' : 'Create Asset'}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
+              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">
                 Cancel
               </button>
             </div>
@@ -183,52 +180,49 @@ export default function Assets() {
       )}
 
       {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-          <p className="text-gray-500">Loading assets...</p>
+        <div className="card p-8 text-center">
+          <p style={{ color: 'var(--text-muted)' }}>Loading assets...</p>
         </div>
       ) : assetsList.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-          <p className="text-gray-500">No assets yet. Add your first target to scan.</p>
+        <div className="card p-8 text-center">
+          <Server size={40} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+          <p style={{ color: 'var(--text-muted)' }}>No assets yet. Add your first target to scan.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {assetsList.map((asset) => (
-            <div key={asset.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-brand-100 rounded-lg text-brand-600">
-                    {assetTypeIcons[asset.asset_type] || <Server size={18} />}
+          {assetsList.map((asset) => {
+            const typeInfo = assetTypeIcons[asset.asset_type] || { icon: <Server size={18} />, color: '#71717a' }
+            return (
+              <div key={asset.id} className="card p-5 group">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${typeInfo.color}20` }}>
+                      <span style={{ color: typeInfo.color }}>{typeInfo.icon}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-white">{asset.name}</h3>
+                      <p className="text-xs capitalize" style={{ color: 'var(--text-muted)' }}>{asset.asset_type}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{asset.name}</h3>
-                    <p className="text-sm text-gray-500 capitalize">{asset.asset_type}</p>
-                  </div>
+                  <button
+                    onClick={() => deleteMutation.mutate(asset.id)}
+                    className="p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10"
+                  >
+                    <Trash2 size={16} className="text-red-500" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => deleteMutation.mutate(asset.id)}
-                  className="p-1 text-gray-400 hover:text-red-500"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <div className="mt-3 space-y-1 text-sm text-gray-600">
-                {asset.ip_address && <p>IP: {asset.ip_address}</p>}
-                {asset.hostname && <p>Host: {asset.hostname}</p>}
-                {asset.url && (
-                  <a href={asset.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-brand-600 hover:underline">
-                    {asset.url} <ExternalLink size={12} />
-                  </a>
-                )}
-              </div>
-              {asset.risk_score > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <span className={`text-sm font-medium ${asset.risk_score >= 7 ? 'text-red-600' : asset.risk_score >= 4 ? 'text-yellow-600' : 'text-green-600'}`}>
-                    Risk Score: {asset.risk_score.toFixed(1)}
-                  </span>
+                <div className="mt-4 space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {asset.ip_address && <p>IP: {asset.ip_address}</p>}
+                  {asset.hostname && <p>Host: {asset.hostname}</p>}
+                  {asset.url && (
+                    <a href={asset.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-400 hover:underline">
+                      {asset.url} <ExternalLink size={12} />
+                    </a>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

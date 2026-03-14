@@ -48,7 +48,7 @@ export const assets = {
   get: (projectId: number, id: number) => api.get(`/assets/${id}`, { params: { project_id: projectId } }),
   create: (data: { name: string; asset_type: string; project_id: number; ip_address?: string; hostname?: string; url?: string; description?: string }) =>
     api.post('/assets/', data),
-  update: (projectId: number, id: number, data: Partial<{ name: string; asset_type: string; ip_address: string; hostname: string; url: string; description: string; risk_score: number }>) =>
+  update: (projectId: number, id: number, data: { name?: string; asset_type?: string; ip_address?: string; hostname?: string; url?: string; description?: string; risk_score?: number }) =>
     api.put(`/assets/${id}`, data, { params: { project_id: projectId } }),
   delete: (projectId: number, id: number) => api.delete(`/assets/${id}`, { params: { project_id: projectId } }),
 };
@@ -75,5 +75,5 @@ export const vulnerabilities = {
   list: (params?: { severity?: string; limit?: number; offset?: number }) =>
     api.get('/vulnerabilities/', { params }),
   get: (cveId: string) => api.get(`/vulnerabilities/${cveId}`),
-  search: (cveId: string) => api.get('/vulnerabilities/search/cve', { params: { cve_id: cveId } }),
+  enrich: (cveId: string) => api.get(`/vulnerabilities/enrich/${cveId}`),
 };

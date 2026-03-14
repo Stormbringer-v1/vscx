@@ -28,8 +28,17 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     try {
       const response = await projectsApi.list();
       setProjects(response.data);
-      if (response.data.length > 0 && !selectedProject) {
-        setSelectedProject(response.data[0]);
+      if (response.data.length > 0) {
+        if (!selectedProject) {
+          setSelectedProject(response.data[0]);
+        } else {
+          const stillExists = response.data.find((p: Project) => p.id === selectedProject.id);
+          if (!stillExists) {
+            setSelectedProject(response.data[0]);
+          }
+        }
+      } else {
+        setSelectedProject(null);
       }
     } catch (error) {
       console.error('Failed to fetch projects:', error);

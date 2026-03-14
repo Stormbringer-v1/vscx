@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Play, Plus, Trash2, Scan, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Play, Plus, Trash2, Scan, CheckCircle, XCircle, Clock, X } from 'lucide-react'
 import { scans } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -11,22 +11,20 @@ interface Scan {
   targets: string
   status: string
   progress: number
-  started_at?: string
-  completed_at?: string
   created_at: string
 }
 
 const statusConfig: Record<string, { icon: React.ReactNode; color: string }> = {
-  pending: { icon: <Clock size={16} />, color: 'text-gray-500' },
-  running: { icon: <Scan size={16} className="animate-pulse" />, color: 'text-blue-500' },
-  completed: { icon: <CheckCircle size={16} />, color: 'text-green-500' },
-  failed: { icon: <XCircle size={16} />, color: 'text-red-500' },
+  pending: { icon: <Clock size={14} />, color: '#71717a' },
+  running: { icon: <Scan size={14} className="animate-pulse" />, color: '#3b82f6' },
+  completed: { icon: <CheckCircle size={14} />, color: '#10b981' },
+  failed: { icon: <XCircle size={14} />, color: '#ef4444' },
 }
 
 const scanTypes = [
-  { value: 'nmap', label: 'Nmap (Network Scan)', description: 'Port and service discovery' },
-  { value: 'nuclei', label: 'Nuclei (Vulnerability Scan)', description: 'Security vulnerability detection' },
-  { value: 'trivy', label: 'Trivy (Container Scan)', description: 'Container and OS vulnerability scanning' },
+  { value: 'nmap', label: 'Nmap', description: 'Port & service discovery', color: '#10b981' },
+  { value: 'nuclei', label: 'Nuclei', description: 'Vulnerability detection', color: '#a855f7' },
+  { value: 'trivy', label: 'Trivy', description: 'Container scanning', color: '#3b82f6' },
 ]
 
 export default function Scans() {
@@ -80,24 +78,25 @@ export default function Scans() {
   if (!selectedProject) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Scans</h1>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-          <p className="text-gray-500">Please create a project first to run scans.</p>
+        <h1 className="text-2xl font-bold text-white">Scans</h1>
+        <div className="card p-8 text-center">
+          <Scan size={40} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+          <p style={{ color: 'var(--text-muted)' }}>Please select a project to run scans.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Scans</h1>
-          <p className="text-gray-500">Run vulnerability scans</p>
+          <h1 className="text-2xl font-bold text-white">Scans</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Run vulnerability scans</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700"
+          className="btn btn-primary"
         >
           <Plus size={18} />
           New Scan
@@ -105,31 +104,32 @@ export default function Scans() {
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold mb-4">Create New Scan</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="card p-6 animate-fade-in">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-white">Create New Scan</h2>
+            <button onClick={() => setShowForm(false)} className="p-2 hover:bg-white/5 rounded-lg">
+              <X size={18} style={{ color: 'var(--text-muted)' }} />
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Scan Name</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Scan Name</label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="input"
                 placeholder="Weekly Security Scan"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Scanner Type</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-secondary)' }}>Scanner Type</label>
+              <div className="grid grid-cols-3 gap-3">
                 {scanTypes.map((type) => (
                   <label
                     key={type.value}
-                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                      formData.scan_type === type.value
-                        ? 'border-brand-500 bg-brand-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`p-4 border rounded-xl cursor-pointer transition-all ${formData.scan_type === type.value ? 'border-green-500 bg-green-500/10' : 'border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}
                   >
                     <input
                       type="radio"
@@ -139,41 +139,30 @@ export default function Scans() {
                       onChange={(e) => setFormData({ ...formData, scan_type: e.target.value })}
                       className="sr-only"
                     />
-                    <p className="font-medium text-gray-900">{type.label}</p>
-                    <p className="text-sm text-gray-500">{type.description}</p>
+                    <div className="text-center">
+                      <p className="font-semibold text-white">{type.label}</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{type.description}</p>
+                    </div>
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Targets</label>
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Targets</label>
               <input
                 type="text"
                 required
                 value={formData.targets}
                 onChange={(e) => setFormData({ ...formData, targets: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="input"
                 placeholder={formData.scan_type === 'trivy' ? 'nginx:latest' : '192.168.1.0/24 or example.com'}
               />
-              <p className="text-sm text-gray-500 mt-1">
-                {formData.scan_type === 'trivy'
-                  ? 'Container image name (e.g., nginx:latest)'
-                  : 'IP addresses, CIDR ranges, or hostnames (comma-separated)'}
-              </p>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={createMutation.isPending}
-                className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 disabled:opacity-50"
-              >
+            <div className="flex gap-3">
+              <button type="submit" disabled={createMutation.isPending} className="btn btn-primary">
                 {createMutation.isPending ? 'Creating...' : 'Create Scan'}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
+              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">
                 Cancel
               </button>
             </div>
@@ -182,85 +171,85 @@ export default function Scans() {
       )}
 
       {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-          <p className="text-gray-500">Loading scans...</p>
+        <div className="card p-8 text-center">
+          <p style={{ color: 'var(--text-muted)' }}>Loading scans...</p>
         </div>
       ) : scansList.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-          <p className="text-gray-500">No scans yet. Start your first scan.</p>
+        <div className="card p-8 text-center">
+          <Scan size={40} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+          <p style={{ color: 'var(--text-muted)' }}>No scans yet. Start your first scan.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Targets</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {scansList.map((scan) => {
-                const status = statusConfig[scan.status] || statusConfig.pending
-                return (
-                  <tr key={scan.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-gray-900">{scan.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {scan.started_at ? new Date(scan.started_at).toLocaleString() : new Date(scan.created_at).toLocaleString()}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="capitalize text-gray-900">{scan.scan_type}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">{scan.targets}</code>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`flex items-center gap-1 ${status.color}`}>
-                        {status.icon}
-                        <span className="capitalize">{scan.status}</span>
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-brand-600 h-2 rounded-full transition-all"
-                            style={{ width: `${scan.progress}%` }}
-                          />
+        <div className="card overflow-hidden">
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Targets</th>
+                  <th>Status</th>
+                  <th>Progress</th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scansList.map((scan) => {
+                  const status = statusConfig[scan.status] || statusConfig.pending
+                  return (
+                    <tr key={scan.id}>
+                      <td>
+                        <p className="font-medium text-white">{scan.name}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {new Date(scan.created_at).toLocaleDateString()}
+                        </p>
+                      </td>
+                      <td>
+                        <span className="capitalize text-white">{scan.scan_type}</span>
+                      </td>
+                      <td>
+                        <code className="text-sm px-2 py-1 rounded" style={{ background: 'var(--bg-tertiary)' }}>{scan.targets}</code>
+                      </td>
+                      <td>
+                        <span className="flex items-center gap-2">
+                          <span style={{ color: status.color }}>{status.icon}</span>
+                          <span className="capitalize" style={{ color: status.color }}>{scan.status}</span>
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="progress-bar w-24">
+                            <div className="progress-fill" style={{ width: `${scan.progress}%` }} />
+                          </div>
+                          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{scan.progress}%</span>
                         </div>
-                        <span className="text-sm text-gray-500">{scan.progress}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {scan.status !== 'running' && (
+                      </td>
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {scan.status !== 'running' && (
+                            <button
+                              onClick={() => executeMutation.mutate(scan.id)}
+                              className="p-2 rounded-lg hover:bg-green-500/10 transition-colors"
+                              title="Run scan"
+                            >
+                              <Play size={16} className="text-green-500" />
+                            </button>
+                          )}
                           <button
-                            onClick={() => executeMutation.mutate(scan.id)}
-                            className="p-1 text-gray-400 hover:text-brand-600"
-                            title="Run scan"
+                            onClick={() => deleteMutation.mutate(scan.id)}
+                            className="p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                            title="Delete scan"
                           >
-                            <Play size={16} />
+                            <Trash2 size={16} className="text-red-500" />
                           </button>
-                        )}
-                        <button
-                          onClick={() => deleteMutation.mutate(scan.id)}
-                          className="p-1 text-gray-400 hover:text-red-500"
-                          title="Delete scan"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
