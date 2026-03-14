@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangle, Search, Filter, Download, MoreVertical } from 'lucide-react'
+import { AlertTriangle, Search, Filter, Download, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react'
 import { findings } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -223,10 +223,10 @@ export default function Findings() {
             <p>Showing 1-{filteredFindings.length} of {summary.total} findings</p>
             <div className="flex items-center gap-2">
               <button className="p-1 rounded hover:bg-slate-800 transition-colors disabled:opacity-50" disabled>
-                <span className="material-symbols-outlined text-lg">chevron_left</span>
+                <ChevronLeft size={18} />
               </button>
               <button className="p-1 rounded hover:bg-slate-800 transition-colors">
-                <span className="material-symbols-outlined text-lg">chevron_right</span>
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>

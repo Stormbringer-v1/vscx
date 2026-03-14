@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import model_validator
 from functools import lru_cache
 
 
@@ -17,6 +18,19 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://redis:6379/1"
 
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+
+    ALLOW_PRIVATE_TARGETS: bool = False
+
+    NVD_API_KEY: str | None = None
+    OPENAI_API_KEY: str | None = None
+    ANTHROPIC_API_KEY: str | None = None
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+
+    @model_validator(mode='after')
+    def validate_secret_key(self):
+        if self.SECRET_KEY == "changeme-in-production":
+            raise ValueError("SECRET_KEY cannot be the default value. Set a secure secret key in environment variables.")
+        return self
 
     class Config:
         env_file = ".env"

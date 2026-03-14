@@ -10,14 +10,20 @@ from app.services.scanners import run_scan
 @celery_app.task(bind=True)
 def execute_scan(self: Task, scan_id: int):
     async def _execute_scan():
-        from sqlalchemy import select, update
-        from app.models.base import Scan, ScanStatus, Finding
+        from sqlalchemy import select
+        from app.models.base import Scan, ScanStatus, Finding, Asset
         
         async with async_session() as db:
             result = await db.execute(select(Scan).where(Scan.id == scan_id))
             scan = result.scalar_one_or_none()
             if not scan:
                 return {"error": "Scan not found"}
+            
+            result = await db.execute(select(Asset).where(Asset.project_id == scan.project_id))
+            assets = result.scalars().all()
+            asset_map = {a.ip_address: a.id for a in assets if a.ip_address}
+            asset_map.update({a.hostname: a.id for a in assets if a.hostname})
+            asset_map.update({a.url: a.id for a in assets if a.url})
             
             scan.status = ScanStatus.RUNNING.value
             scan.started_at = datetime.utcnow()
@@ -39,16 +45,23 @@ def execute_scan(self: Task, scan_id: int):
             
             findings_count = 0
             for finding_data in scan_result.get("findings", []):
+                affected = finding_data.get("affected_component", "")
+                matched_asset_id = None
+                for key, asset_id in asset_map.items():
+                    if key and key in affected:
+                        matched_asset_id = asset_id
+                        break
+                
                 finding = Finding(
                     scan_id=scan_id,
-                    asset_id=0,
+                    asset_id=matched_asset_id,
                     project_id=scan.project_id,
                     title=finding_data.get("title", "Unknown"),
                     description=finding_data.get("description", ""),
                     severity=finding_data.get("severity", "medium"),
                     cve_id=finding_data.get("cve_id"),
                     cvss_score=finding_data.get("cvss_score"),
-                    affected_component=finding_data.get("affected_component", ""),
+                    affected_component=affected,
                     status="open"
                 )
                 db.add(finding)

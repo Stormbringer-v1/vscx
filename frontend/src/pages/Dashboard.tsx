@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { Shield, Activity, TrendingUp, TrendingDown, FileText, Plus } from 'lucide-react'
+import { Shield, Activity, FileText, Plus } from 'lucide-react'
 import { findings, scans, assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 interface Scan {
   id: number
@@ -36,10 +37,17 @@ export default function Dashboard() {
   const assetsCount = assetsData?.data?.length || 0
   const scansList: Scan[] = scansData?.data || []
 
+  const severityData = [
+    { name: 'Critical', value: summary.by_severity?.critical || 0, color: '#ef4444' },
+    { name: 'High', value: summary.by_severity?.high || 0, color: '#f97316' },
+    { name: 'Medium', value: summary.by_severity?.medium || 0, color: '#eab308' },
+    { name: 'Low', value: summary.by_severity?.low || 0, color: '#3b82f6' },
+  ]
+
   const recentScans = scansList.slice(0, 4)
-  const totalRiskScore = (summary.by_severity?.critical || 0) * 10 + 
+  const totalRiskScore = ((summary.by_severity?.critical || 0) * 10 + 
                           (summary.by_severity?.high || 0) * 5 + 
-                          (summary.by_severity?.medium || 0) * 2 || 0
+                          (summary.by_severity?.medium || 0) * 2) || 0
 
   if (!selectedProject) {
     return (
@@ -83,63 +91,43 @@ export default function Dashboard() {
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
           <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Assets</p>
-          <div className="flex items-end justify-between">
-            <p className="text-white text-3xl font-bold leading-none">{assetsCount}</p>
-            <p className="text-[#22c55e] flex items-center text-sm font-semibold bg-[#22c55e]/10 px-2 py-1 rounded">
-              <TrendingUp size={14} className="mr-1" /> +5%
-            </p>
-          </div>
+          <p className="text-white text-3xl font-bold leading-none">{assetsCount}</p>
         </div>
         <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
           <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Active Scans</p>
-          <div className="flex items-end justify-between">
-            <p className="text-white text-3xl font-bold leading-none">{scansList.filter(s => s.status === 'running').length}</p>
-            <p className="text-[#22c55e] flex items-center text-sm font-semibold bg-[#22c55e]/10 px-2 py-1 rounded">
-              <TrendingUp size={14} className="mr-1" /> +2%
-            </p>
-          </div>
+          <p className="text-white text-3xl font-bold leading-none">{scansList.filter(s => s.status === 'running').length}</p>
         </div>
         <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
           <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Open Findings</p>
-          <div className="flex items-end justify-between">
-            <p className="text-white text-3xl font-bold leading-none">{summary.total}</p>
-            <p className="text-red-400 flex items-center text-sm font-semibold bg-red-400/10 px-2 py-1 rounded">
-              <TrendingDown size={14} className="mr-1" /> -15%
-            </p>
-          </div>
+          <p className="text-white text-3xl font-bold leading-none">{summary.total}</p>
         </div>
         <div className="flex flex-col gap-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800">
           <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Risk Score</p>
-          <div className="flex items-end justify-between">
-            <p className="text-white text-3xl font-bold leading-none">{totalRiskScore}</p>
-            <p className="text-red-400 flex items-center text-sm font-semibold bg-red-400/10 px-2 py-1 rounded">
-              <TrendingDown size={14} className="mr-1" /> -3%
-            </p>
-          </div>
+          <p className="text-white text-3xl font-bold leading-none">{totalRiskScore}</p>
         </div>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <section className="lg:col-span-2 rounded-xl p-6 bg-[#1e293b] border border-slate-800 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-white text-lg font-bold">Vulnerability Trend</h3>
-            <select className="bg-[#0b1120] border border-slate-700 text-slate-300 text-sm rounded-lg p-2">
-              <option>Last 30 Days</option>
-              <option>Last 90 Days</option>
-              <option>Year to Date</option>
-            </select>
+            <h3 className="text-white text-lg font-bold">Findings by Severity</h3>
           </div>
-          <div className="flex-1 min-h-[300px] w-full bg-[#0b1120]/50 rounded-lg flex items-center justify-center border border-slate-800 border-dashed relative overflow-hidden">
-            <div className="absolute inset-0 flex items-end px-8 pb-8 pt-12 justify-between gap-2 opacity-50">
-              <div className="w-full bg-red-500/20 rounded-t h-[40%]"></div>
-              <div className="w-full bg-red-500/20 rounded-t h-[60%]"></div>
-              <div className="w-full bg-red-500/20 rounded-t h-[45%]"></div>
-              <div className="w-full bg-red-500/20 rounded-t h-[75%]"></div>
-              <div className="w-full bg-red-500/20 rounded-t h-[50%]"></div>
-              <div className="w-full bg-red-500/20 rounded-t h-[80%]"></div>
-              <div className="w-full bg-red-500/20 rounded-t h-[65%]"></div>
-            </div>
-            <p className="text-slate-500 font-medium z-10">Trend Chart Visualization</p>
+          <div className="flex-1 min-h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={severityData} layout="vertical" margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
+                <XAxis type="number" stroke="#64748b" fontSize={12} />
+                <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: '#f1f5f9' }}
+                  cursor={{ fill: '#1e293b' }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                  {severityData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </section>
 

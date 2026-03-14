@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Shield, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Shield, AlertCircle, ArrowRight, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import { auth } from '../lib/api'
 
 export default function Login() {
@@ -14,6 +14,7 @@ export default function Login() {
     password: '',
   })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,7 +26,8 @@ export default function Login() {
       if (isRegister) {
         await auth.register(formData.username, formData.email, formData.password)
         setIsRegister(false)
-        setError('Registration successful! Please sign in.')
+        setSuccess('Registration successful. Please sign in.')
+        setError('')
       } else {
         const response = await auth.login(formData.username, formData.password)
         localStorage.setItem('token', response.data.access_token)
@@ -42,7 +44,7 @@ export default function Login() {
     <div className="min-h-screen flex flex-col bg-slate-950">
       <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-800 px-10 py-4 bg-slate-900/50 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 text-[#21c45d] flex items-center justify-center">
+          <div className="w-6 h-6 text-[#22c55e] flex items-center justify-center">
             <Shield size={24} />
           </div>
           <h2 className="text-slate-100 text-xl font-bold tracking-tight">VSX</h2>
@@ -67,6 +69,13 @@ export default function Login() {
             </div>
           )}
 
+          {success && (
+            <div className="p-4 rounded-lg flex items-center gap-3" style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+              <CheckCircle size={18} className="text-green-400 flex-shrink-0" />
+              <span className="text-sm text-green-300">{success}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <label className="text-slate-200 text-sm font-medium ml-1" htmlFor="username">Username</label>
@@ -76,7 +85,7 @@ export default function Login() {
                   id="username"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#21c45d] focus:ring-1 focus:ring-[#21c45d] transition-all text-sm"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all text-sm"
                   placeholder="Enter your username"
                   required
                 />
@@ -92,7 +101,7 @@ export default function Login() {
                     id="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#21c45d] focus:ring-1 focus:ring-[#21c45d] transition-all text-sm"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all text-sm"
                     placeholder="Enter your email address"
                     required={isRegister}
                   />
@@ -103,7 +112,7 @@ export default function Login() {
             <div className="flex flex-col gap-1">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-slate-200 text-sm font-medium" htmlFor="password">Password</label>
-                <a className="text-xs font-medium text-[#21c45d] hover:text-[#21c45d]/80 transition-colors" href="#">Forgot Password?</a>
+                <a className="text-xs font-medium text-[#22c55e] hover:text-[#22c55e]/80 transition-colors" href="#">Forgot Password?</a>
               </div>
               <div className="relative flex items-center">
                 <input
@@ -111,7 +120,7 @@ export default function Login() {
                   id="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-12 pr-12 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#21c45d] focus:ring-1 focus:ring-[#21c45d] transition-all text-sm"
+                  className="w-full pl-12 pr-12 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all text-sm"
                   placeholder="Enter your password"
                   required
                   minLength={6}
@@ -132,7 +141,7 @@ export default function Login() {
                 id="remember"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-600 bg-slate-900/50 text-[#21c45d] focus:ring-[#21c45d] focus:ring-offset-0 focus:ring-1 transition-colors cursor-pointer"
+                className="h-4 w-4 rounded border-slate-600 bg-slate-900/50 text-[#22c55e] focus:ring-[#22c55e] focus:ring-offset-0 focus:ring-1 transition-colors cursor-pointer"
               />
               <label className="text-slate-300 text-sm font-normal cursor-pointer select-none" htmlFor="remember">Remember me</label>
             </div>
@@ -140,7 +149,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#21c45d] hover:bg-[#21c45d]/90 text-slate-900 font-bold py-3 px-4 rounded-lg mt-2 transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
+              className="w-full bg-[#22c55e] hover:bg-[#22c55e]/90 text-slate-900 font-bold py-3 px-4 rounded-lg mt-2 transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
             >
               <span>{loading ? 'Please wait...' : 'Sign In'}</span>
               <ArrowRight size={20} />
@@ -154,8 +163,9 @@ export default function Login() {
                 onClick={() => {
                   setIsRegister(!isRegister)
                   setError('')
+                  setSuccess('')
                 }}
-                className="text-[#21c45d] hover:underline font-medium"
+                className="text-[#22c55e] hover:underline font-medium"
               >
                 {isRegister ? 'Sign In' : 'Request Access'}
               </button>

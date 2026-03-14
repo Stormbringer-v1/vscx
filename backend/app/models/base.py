@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, Text, Float, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Enum, Text, Float, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -33,6 +34,9 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    projects = relationship("Project", back_populates="owner")
+    scans = relationship("Scan", back_populates="created_by_user")
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -40,16 +44,21 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    owner_id = Column(Integer, nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    owner = relationship("User", back_populates="projects")
+    assets = relationship("Asset", back_populates="project", cascade="all, delete-orphan")
+    scans = relationship("Scan", back_populates="project", cascade="all, delete-orphan")
+    findings = relationship("Finding", back_populates="project", cascade="all, delete-orphan")
 
 
 class Asset(Base):
     __tablename__ = "assets"
 
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     asset_type = Column(String(50), nullable=False)
     ip_address = Column(String(45))
@@ -61,12 +70,15 @@ class Asset(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    project = relationship("Project", back_populates="assets")
+    findings = relationship("Finding", back_populates="asset")
+
 
 class Scan(Base):
     __tablename__ = "scans"
 
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, nullable=False, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     scan_type = Column(String(50), nullable=False)
     targets = Column(Text, nullable=False)
@@ -74,18 +86,22 @@ class Scan(Base):
     progress = Column(Integer, default=0)
     started_at = Column(DateTime(timezone=True))
     completed_at = Column(DateTime(timezone=True))
-    created_by = Column(Integer, nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    project = relationship("Project", back_populates="scans")
+    created_by_user = relationship("User", back_populates="scans")
+    findings = relationship("Finding", back_populates="scan", cascade="all, delete-orphan")
 
 
 class Finding(Base):
     __tablename__ = "findings"
 
     id = Column(Integer, primary_key=True, index=True)
-    scan_id = Column(Integer, nullable=False, index=True)
-    asset_id = Column(Integer, nullable=False, index=True)
-    project_id = Column(Integer, nullable=False, index=True)
+    scan_id = Column(Integer, ForeignKey("scans.id", ondelete="CASCADE"), nullable=False, index=True)
+    asset_id = Column(Integer, ForeignKey("assets.id", ondelete="SET NULL"), nullable=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
     title = Column(String(500), nullable=False)
     description = Column(Text)
     severity = Column(String(20), nullable=False, index=True)
@@ -96,6 +112,10 @@ class Finding(Base):
     remediation = Column(Text)
     status = Column(String(20), default="open")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    scan = relationship("Scan", back_populates="findings")
+    asset = relationship("Asset", back_populates="findings")
+    project = relationship("Project", back_populates="findings")
 
 
 class Vulnerability(Base):

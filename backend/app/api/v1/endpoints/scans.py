@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.core.database import get_db
 from app.models.base import Project, Scan, ScanStatus
@@ -10,6 +12,7 @@ from app.models.base import User
 from app.schemas.scan import ScanCreate, ScanUpdate, ScanResponse
 
 router = APIRouter(prefix="/scans", tags=["scans"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 async def get_project_for_user(project_id: int, user_id: int, db: AsyncSession):
@@ -41,6 +44,11 @@ async def create_scan(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    from app.services.scanners import validate_targets
+    is_valid, error_msg, _ = validate_targets(scan.targets)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
     await get_project_for_user(scan.project_id, current_user.id, db)
     
     db_scan = Scan(
@@ -98,12 +106,15 @@ async def delete_scan(
 
 
 @router.post("/{scan_id}/execute")
+@limiter.limit("10/minute")
 async def execute_scan(
+    request: Request,
     scan_id: int,
     project_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    from app.services.scanners import validate_targets
     await get_project_for_user(project_id, current_user.id, db)
     
     result = await db.execute(
@@ -115,6 +126,10 @@ async def execute_scan(
     
     if scan.status == ScanStatus.RUNNING.value:
         raise HTTPException(status_code=400, detail="Scan is already running")
+    
+    is_valid, error_msg, _ = validate_targets(scan.targets)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
     
     from app.services.tasks import execute_scan
     task = execute_scan.delay(scan_id)

@@ -32,7 +32,7 @@ export const auth = {
   login: (username: string, password: string) =>
     api.post('/auth/login', new URLSearchParams({ username, password })),
   register: (username: string, email: string, password: string) =>
-    api.post('/auth/register', null, { params: { username, email, password } }),
+    api.post('/auth/register', { username, email, password }),
 };
 
 export const projects = {

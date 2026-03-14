@@ -1,14 +1,60 @@
-import { useState } from 'react'
-import { Save } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Save, Check } from 'lucide-react'
+
+const STORAGE_KEY = 'vscx-settings'
+
+const defaultSettings = {
+  orgName: 'Security Team Alpha',
+  timezone: 'UTC',
+  dateFormat: 'YYYY-MM-DD',
+  scanProfile: 'standard',
+  concurrentScans: 5,
+  nmapOptions: '-sS -sV -O --top-ports 1000',
+  selectedTemplates: ['cves', 'vulnerabilities', 'exposures'],
+}
 
 export default function Settings() {
-  const [orgName, setOrgName] = useState('Security Team Alpha')
-  const [timezone, setTimezone] = useState('UTC')
-  const [dateFormat, setDateFormat] = useState('YYYY-MM-DD')
-  const [scanProfile, setScanProfile] = useState('standard')
-  const [concurrentScans, setConcurrentScans] = useState(5)
-  const [nmapOptions, setNmapOptions] = useState('-sS -sV -O --top-ports 1000')
-  const [selectedTemplates, setSelectedTemplates] = useState(['cves', 'vulnerabilities', 'exposures'])
+  const [orgName, setOrgName] = useState(defaultSettings.orgName)
+  const [timezone, setTimezone] = useState(defaultSettings.timezone)
+  const [dateFormat, setDateFormat] = useState(defaultSettings.dateFormat)
+  const [scanProfile, setScanProfile] = useState(defaultSettings.scanProfile)
+  const [concurrentScans, setConcurrentScans] = useState(defaultSettings.concurrentScans)
+  const [nmapOptions, setNmapOptions] = useState(defaultSettings.nmapOptions)
+  const [selectedTemplates, setSelectedTemplates] = useState(defaultSettings.selectedTemplates)
+  const [saveMessage, setSaveMessage] = useState('')
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved)
+        setOrgName(settings.orgName || defaultSettings.orgName)
+        setTimezone(settings.timezone || defaultSettings.timezone)
+        setDateFormat(settings.dateFormat || defaultSettings.dateFormat)
+        setScanProfile(settings.scanProfile || defaultSettings.scanProfile)
+        setConcurrentScans(settings.concurrentScans || defaultSettings.concurrentScans)
+        setNmapOptions(settings.nmapOptions || defaultSettings.nmapOptions)
+        setSelectedTemplates(settings.selectedTemplates || defaultSettings.selectedTemplates)
+      } catch (e) {
+        console.error('Failed to parse saved settings', e)
+      }
+    }
+  }, [])
+
+  const handleSave = () => {
+    const settings = {
+      orgName,
+      timezone,
+      dateFormat,
+      scanProfile,
+      concurrentScans,
+      nmapOptions,
+      selectedTemplates,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    setSaveMessage('Settings saved')
+    setTimeout(() => setSaveMessage(''), 2000)
+  }
 
   const templates = ['cves', 'vulnerabilities', 'exposures', 'misconfigurations', 'default-logins', 'takeovers']
 
@@ -30,7 +76,7 @@ export default function Settings() {
               <label className="flex flex-col">
                 <span className="text-slate-300 text-sm font-medium mb-2">Organization Name</span>
                 <input 
-                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] h-12 px-4"
                   type="text" 
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
@@ -39,7 +85,7 @@ export default function Settings() {
               <label className="flex flex-col">
                 <span className="text-slate-300 text-sm font-medium mb-2">Timezone</span>
                 <select 
-                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] h-12 px-4"
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
                 >
@@ -52,7 +98,7 @@ export default function Settings() {
               <label className="flex flex-col">
                 <span className="text-slate-300 text-sm font-medium mb-2">Date Format</span>
                 <select 
-                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] h-12 px-4"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
                 >
@@ -75,7 +121,7 @@ export default function Settings() {
               <label className="flex flex-col">
                 <span className="text-slate-300 text-sm font-medium mb-2">Default Scan Profile</span>
                 <select 
-                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4"
+                  className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] h-12 px-4"
                   value={scanProfile}
                   onChange={(e) => setScanProfile(e.target.value)}
                 >
@@ -89,10 +135,10 @@ export default function Settings() {
                 <label className="flex flex-col">
                   <span className="text-slate-300 text-sm font-medium mb-2 flex justify-between">
                     <span>Concurrent Scans</span>
-                    <span className="text-[#1acb5b] font-bold">{concurrentScans}</span>
+                    <span className="text-[#22c55e] font-bold">{concurrentScans}</span>
                   </span>
                   <input 
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#1acb5b]"
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#22c55e]"
                     type="range" 
                     min="1" 
                     max="10" 
@@ -109,7 +155,7 @@ export default function Settings() {
             <label className="flex flex-col">
               <span className="text-slate-300 text-sm font-medium mb-2">Custom Nmap Options</span>
               <input 
-                className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-12 px-4 font-mono text-sm"
+                className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] h-12 px-4 font-mono text-sm"
                 type="text" 
                 value={nmapOptions}
                 onChange={(e) => setNmapOptions(e.target.value)}
@@ -118,7 +164,7 @@ export default function Settings() {
             <label className="flex flex-col">
               <span className="text-slate-300 text-sm font-medium mb-2">Nuclei Templates Selector</span>
               <select 
-                className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#1acb5b] focus:ring-1 focus:ring-[#1acb5b] h-32 px-4 py-2"
+                className="rounded-lg border-slate-700 bg-[#112117] text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] h-32 px-4 py-2"
                 multiple
                 value={selectedTemplates}
                 onChange={(e) => {
@@ -136,8 +182,17 @@ export default function Settings() {
         </section>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-[#15291d] border-t border-slate-800 p-4 md:px-8 flex justify-end z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <button className="bg-[#1acb5b] hover:bg-[#1acb5b]/90 text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2">
+      <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-[#15291d] border-t border-slate-800 p-4 md:px-8 flex justify-end items-center gap-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        {saveMessage && (
+          <span className="text-green-400 text-sm font-medium flex items-center gap-2">
+            <Check size={16} />
+            {saveMessage}
+          </span>
+        )}
+        <button 
+          onClick={handleSave}
+          className="bg-[#22c55e] hover:bg-[#22c55e]/90 text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2"
+        >
           <Save size={18} />
           Save Changes
         </button>

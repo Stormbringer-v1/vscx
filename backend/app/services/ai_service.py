@@ -1,12 +1,13 @@
 import httpx
 from typing import Dict, Any, List, Optional
-import os
+
+from app.core.config import settings
 
 
 class AIService:
     def __init__(self):
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+        self.openai_api_key = settings.OPENAI_API_KEY
+        self.anthropic_api_key = settings.ANTHROPIC_API_KEY
         self.client = httpx.AsyncClient(timeout=60.0)
     
     async def generate_remediation_suggestion(

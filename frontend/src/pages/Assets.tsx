@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Server, X, Search, Filter, MoreVertical, Computer, HardDrive, Laptop, Network } from 'lucide-react'
+import { Plus, Server, X, Search, Filter, MoreVertical, Computer, HardDrive, Laptop, Network, ChevronLeft, ChevronRight } from 'lucide-react'
 import { assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -108,7 +108,7 @@ export default function Assets() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 bg-[#21c488] text-white text-sm font-medium hover:bg-[#21c488]/90 transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 bg-[#22c55e] text-white text-sm font-medium hover:bg-[#22c55e]/90 transition-colors"
         >
           <Plus size={18} />
           <span>Add Asset</span>
@@ -132,7 +132,7 @@ export default function Assets() {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                   placeholder="Production Server"
                 />
               </div>
@@ -141,7 +141,7 @@ export default function Assets() {
                 <select
                   value={formData.asset_type}
                   onChange={(e) => setFormData({ ...formData, asset_type: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                 >
                   <option value="server">Server</option>
                   <option value="website">Website</option>
@@ -157,7 +157,7 @@ export default function Assets() {
                   type="text"
                   value={formData.ip_address}
                   onChange={(e) => setFormData({ ...formData, ip_address: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                   placeholder="192.168.1.1"
                 />
               </div>
@@ -167,7 +167,7 @@ export default function Assets() {
                   type="text"
                   value={formData.hostname}
                   onChange={(e) => setFormData({ ...formData, hostname: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
+                  className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                   placeholder="server.example.com"
                 />
               </div>
@@ -178,7 +178,7 @@ export default function Assets() {
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
+                className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                 placeholder="https://example.com"
               />
             </div>
@@ -187,12 +187,12 @@ export default function Assets() {
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#21c488] focus:ring-1 focus:ring-[#21c488]"
+                className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                 rows={3}
               />
             </div>
             <div className="flex gap-3">
-              <button type="submit" disabled={createMutation.isPending} className="bg-[#21c488] hover:bg-[#21c488]/90 text-white px-6 py-2 rounded-lg font-medium">
+              <button type="submit" disabled={createMutation.isPending} className="bg-[#22c55e] hover:bg-[#22c55e]/90 text-white px-6 py-2 rounded-lg font-medium">
                 {createMutation.isPending ? 'Creating...' : 'Create Asset'}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium">
@@ -208,7 +208,7 @@ export default function Assets() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
-              className="w-full pl-10 pr-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#21c488] focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#22c55e] focus:border-transparent"
               placeholder="Search assets by IP, hostname, or tags..."
               type="text"
               value={searchTerm}
@@ -217,7 +217,7 @@ export default function Assets() {
           </div>
           <div className="flex gap-3">
             <select
-              className="appearance-none bg-[#12201b] border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#21c488]"
+              className="appearance-none bg-[#12201b] border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#22c55e]"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -226,7 +226,7 @@ export default function Assets() {
               <option value="offline">Offline</option>
             </select>
             <select
-              className="appearance-none bg-[#12201b] border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#21c488]"
+              className="appearance-none bg-[#12201b] border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#22c55e]"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
             >
@@ -250,7 +250,7 @@ export default function Assets() {
               <thead>
                 <tr className="bg-[#152620] border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400">
                   <th className="p-4 w-12 text-center">
-                    <input className="rounded border-slate-600 text-[#21c488] focus:ring-[#21c488] bg-transparent" type="checkbox" />
+                    <input className="rounded border-slate-600 text-[#22c55e] focus:ring-[#22c55e] bg-transparent" type="checkbox" />
                   </th>
                   <th className="p-4 font-semibold">Asset</th>
                   <th className="p-4 font-semibold">Type</th>
@@ -274,7 +274,7 @@ export default function Assets() {
                   filteredAssets.map((asset) => (
                     <tr key={asset.id} className="hover:bg-[#1c312a] transition-colors group">
                       <td className="p-4 text-center">
-                        <input className="rounded border-slate-600 text-[#21c488] focus:ring-[#21c488] bg-transparent" type="checkbox" />
+                        <input className="rounded border-slate-600 text-[#22c55e] focus:ring-[#22c55e] bg-transparent" type="checkbox" />
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
@@ -302,9 +302,9 @@ export default function Assets() {
                       <td className="p-4 text-sm text-slate-300">{asset.last_scan || 'Never'}</td>
                       <td className="p-4">
                         <div className="flex gap-1.5">
-                          <span className={getSeverityClass(Math.floor(Math.random() * 3), 'critical')} title="Critical">{(asset.risk_score || 0) % 10}</span>
-                          <span className={getSeverityClass(Math.floor(Math.random() * 5), 'high')}>{Math.floor(Math.random() * 8)}</span>
-                          <span className={getSeverityClass(Math.floor(Math.random() * 10), 'medium')}>{Math.floor(Math.random() * 15)}</span>
+                          <span className={getSeverityClass(0, 'critical')} title="Critical">0</span>
+                          <span className={getSeverityClass(0, 'high')}>0</span>
+                          <span className={getSeverityClass(0, 'medium')}>0</span>
                         </div>
                       </td>
                       <td className="p-4 text-right">
@@ -322,12 +322,12 @@ export default function Assets() {
             <p className="text-sm text-slate-400">Showing 1 to {filteredAssets.length} of {assetsList.length} entries</p>
             <div className="flex gap-1">
               <button className="flex items-center justify-center size-8 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors disabled:opacity-50" disabled>
-                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                <ChevronLeft size={20} />
               </button>
-              <button className="flex items-center justify-center size-8 rounded-lg bg-[#21c488] text-white text-sm font-medium">1</button>
+              <button className="flex items-center justify-center size-8 rounded-lg bg-[#22c55e] text-white text-sm font-medium">1</button>
               <button className="flex items-center justify-center size-8 rounded-lg text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors">2</button>
               <button className="flex items-center justify-center size-8 rounded-lg text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors">
-                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                <ChevronRight size={20} />
               </button>
             </div>
           </div>

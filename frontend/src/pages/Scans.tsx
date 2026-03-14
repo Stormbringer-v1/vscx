@@ -12,6 +12,9 @@ interface Scan {
   status: string
   progress: number
   created_at: string
+  started_at?: string
+  completed_at?: string
+  findings_count?: number
 }
 
 const scanTools = [
@@ -298,12 +301,21 @@ export default function Scans() {
                       <td className="p-4 text-center">
                         {scan.status === 'completed' ? (
                           <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-orange-500/10 text-orange-400 font-bold text-xs">
-                            {Math.floor(Math.random() * 20)}
+                            {scan.findings_count ?? 0}
                           </span>
                         ) : '-'}
                       </td>
                       <td className="p-4 text-slate-400">
-                        {scan.status === 'completed' ? `${Math.floor(Math.random() * 10)}m ${Math.floor(Math.random() * 60)}s` : '-'}
+                        {scan.status === 'completed' && scan.started_at && scan.completed_at ? (
+                          (() => {
+                            const start = new Date(scan.started_at).getTime()
+                            const end = new Date(scan.completed_at).getTime()
+                            const durationSec = Math.floor((end - start) / 1000)
+                            const mins = Math.floor(durationSec / 60)
+                            const secs = durationSec % 60
+                            return `${mins}m ${secs}s`
+                          })()
+                        ) : '-'}
                       </td>
                       <td className="p-4 text-slate-400">
                         {new Date(scan.created_at).toLocaleDateString()}

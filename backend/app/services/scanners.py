@@ -1,8 +1,84 @@
 import asyncio
 import json
-import subprocess
+import ipaddress
+import re
+import socket
 from typing import List, Dict, Any
 from datetime import datetime
+
+from app.core.config import settings
+
+
+def is_loopback_ip(ip_str: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        return ip.is_loopback
+    except ValueError:
+        return False
+
+
+def is_private_ip(ip_str: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        return ip.is_private
+    except ValueError:
+        return False
+
+
+def is_in_private_range(ip_str: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        private_ranges = [
+            ipaddress.ip_network("10.0.0.0/8"),
+            ipaddress.ip_network("172.16.0.0/12"),
+            ipaddress.ip_network("192.168.0.0/16"),
+        ]
+        return any(ip in network for network in private_ranges)
+    except ValueError:
+        return False
+
+
+def is_valid_target(target: str) -> tuple[bool, str]:
+    target = target.strip()
+    
+    if target.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+        return False, f"Target '{target}' is a loopback address and is not allowed"
+    
+    if is_loopback_ip(target):
+        return False, f"Target '{target}' resolves to a loopback address"
+    
+    if not settings.ALLOW_PRIVATE_TARGETS:
+        if is_private_ip(target) or is_in_private_range(target):
+            return False, f"Target '{target}' is in a private IP range. Set ALLOW_PRIVATE_TARGETS=true to allow"
+    
+    hostname_pattern = re.compile(r'^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$')
+    if not hostname_pattern.match(target):
+        if not target.replace(".", "").replace("-", "").replace("_", "").isalnum():
+            return False, f"Target '{target}' contains invalid characters"
+    
+    try:
+        resolved = socket.gethostbyname(target)
+        if is_loopback_ip(resolved):
+            return False, f"Target '{target}' resolves to loopback address"
+    except socket.gaierror:
+        pass
+    
+    return True, ""
+
+
+def validate_targets(targets: str) -> tuple[bool, str, List[str]]:
+    target_list = [t.strip() for t in targets.split(",") if t.strip()]
+    invalid_targets = []
+    
+    for target in target_list:
+        is_valid, error_msg = is_valid_target(target)
+        if not is_valid:
+            invalid_targets.append(error_msg)
+    
+    if invalid_targets:
+        return False, "; ".join(invalid_targets), []
+    
+    return True, "", target_list
 
 
 class ScannerBase:
@@ -165,8 +241,12 @@ SCANNERS = {
 
 
 async def run_scan(scan_type: str, targets: str, options: str = "") -> Dict[str, Any]:
+    is_valid, error_msg, validated_targets = validate_targets(targets)
+    if not is_valid:
+        return {"error": error_msg, "success": False}
+    
     scanner = SCANNERS.get(scan_type.lower())
     if not scanner:
         return {"error": f"Unknown scanner: {scan_type}", "success": False}
     
-    return await scanner.scan(targets, options)
+    return await scanner.scan(",".join(validated_targets), options)

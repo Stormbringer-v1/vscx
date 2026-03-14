@@ -89,8 +89,7 @@ async def enrich_cve(
     from app.services.vulnerability_db import VulnerabilityService
     from app.core.config import settings
     
-    nvd_key = getattr(settings, 'NVD_API_KEY', None)
-    service = VulnerabilityService(nvd_api_key=nvd_key)
+    service = VulnerabilityService(nvd_api_key=settings.NVD_API_KEY)
     try:
         result = await service.enrich_finding(cve_id)
         return result
@@ -106,8 +105,7 @@ async def enrich_cves_batch(
     from app.services.vulnerability_db import VulnerabilityService
     from app.core.config import settings
     
-    nvd_key = getattr(settings, 'NVD_API_KEY', None)
-    service = VulnerabilityService(nvd_api_key=nvd_key)
+    service = VulnerabilityService(nvd_api_key=settings.NVD_API_KEY)
     try:
         results = await service.enrich_findings_batch(cve_ids)
         return {"enrichments": results}
@@ -123,8 +121,7 @@ async def lookup_nvd(
     from app.services.vulnerability_db import NVDClient
     from app.core.config import settings
     
-    nvd_key = getattr(settings, 'NVD_API_KEY', None)
-    client = NVDClient(nvd_api_key=nvd_key)
+    client = NVDClient(nvd_api_key=settings.NVD_API_KEY)
     try:
         result = await client.get_cve(cve_id)
         if not result:
