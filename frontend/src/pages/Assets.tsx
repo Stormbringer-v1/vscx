@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Server, Globe, Monitor, Trash2, ExternalLink, X, Search, Filter, MoreVertical, Computer, Dns, Hub, Laptop } from 'lucide-react'
+import { Plus, Server, X, Search, Filter, MoreVertical, Computer, HardDrive, Laptop, Network } from 'lucide-react'
 import { assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -21,9 +21,9 @@ interface Asset {
 const getAssetIcon = (type: string) => {
   switch (type) {
     case 'server': return <Computer size={18} />
-    case 'website': return <Dns size={18} />
+    case 'website': return <HardDrive size={18} />
     case 'workstation': return <Laptop size={18} />
-    case 'network': return <Hub size={18} />
+    case 'network': return <Network size={18} />
     default: return <Server size={18} />
   }
 }
@@ -67,13 +67,6 @@ export default function Assets() {
       queryClient.invalidateQueries({ queryKey: ['assets', selectedProject?.id] })
       setShowForm(false)
       setFormData({ name: '', asset_type: 'server', ip_address: '', hostname: '', url: '', description: '' })
-    },
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => assets.delete(selectedProject!.id, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets', selectedProject?.id] })
     },
   })
 

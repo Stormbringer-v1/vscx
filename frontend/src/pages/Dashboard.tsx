@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Shield, Server, Bug, AlertTriangle, Activity, TrendingUp, TrendingDown, FileText, Plus, MoreVertical } from 'lucide-react'
+import { Shield, Activity, TrendingUp, TrendingDown, FileText, Plus } from 'lucide-react'
 import { findings, scans, assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -40,13 +40,6 @@ export default function Dashboard() {
   const totalRiskScore = (summary.by_severity?.critical || 0) * 10 + 
                           (summary.by_severity?.high || 0) * 5 + 
                           (summary.by_severity?.medium || 0) * 2 || 0
-
-  const stats = [
-    { label: 'Total Assets', value: assetsCount, icon: Server, trend: '+5%', trendUp: true },
-    { label: 'Active Scans', value: scansList.filter(s => s.status === 'running').length, icon: Activity, trend: '+2%', trendUp: true },
-    { label: 'Open Findings', value: summary.total, icon: Bug, trend: '-15%', trendUp: false },
-    { label: 'Risk Score', value: 72, icon: TrendingDown, trend: '-3%', trendUp: false },
-  ]
 
   if (!selectedProject) {
     return (

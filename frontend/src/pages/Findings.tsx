@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle, Search, Filter, Download, MoreVertical, Bug } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { AlertTriangle, Search, Filter, Download, MoreVertical } from 'lucide-react'
 import { findings } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -36,7 +36,6 @@ const getStatusClass = (status: string) => {
 
 export default function Findings() {
   const { selectedProject } = useProjects()
-  const queryClient = useQueryClient()
   const [severityFilter, setSeverityFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')

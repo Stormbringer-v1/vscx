@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Play, Plus, Trash2, Scan, CheckCircle, XCircle, Clock, X, Network, BugReport, Inventory, StopCircle, Replay, MoreVertical, Sync } from 'lucide-react'
+import { Play, Plus, Scan, CheckCircle, XCircle, Clock, X, Network, Bug, Box, StopCircle, Reply, RefreshCw } from 'lucide-react'
 import { scans } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -27,7 +27,7 @@ const scanTools = [
     id: 'nuclei', 
     label: 'Nuclei', 
     description: 'Fast and customizable vulnerability scanner based on simple YAML based DSL.',
-    icon: BugReport,
+    icon: Bug,
     color: '#f97316',
     bgColor: 'bg-orange-500/10'
   },
@@ -35,7 +35,7 @@ const scanTools = [
     id: 'trivy', 
     label: 'Trivy', 
     description: 'Comprehensive and versatile security scanner for containers and artifacts.',
-    icon: Inventory,
+    icon: Box,
     color: '#a855f7',
     bgColor: 'bg-purple-500/10'
   },
@@ -51,7 +51,7 @@ export default function Scans() {
     targets: '',
   })
 
-  const { data: scansData, isLoading } = useQuery({
+  const { data: scansData } = useQuery({
     queryKey: ['scans', selectedProject?.id],
     queryFn: () => scans.list(selectedProject!.id),
     enabled: !!selectedProject,
@@ -64,20 +64,6 @@ export default function Scans() {
       queryClient.invalidateQueries({ queryKey: ['scans', selectedProject?.id] })
       setShowForm(false)
       setFormData({ name: '', scan_type: 'nmap', targets: '' })
-    },
-  })
-
-  const executeMutation = useMutation({
-    mutationFn: (id: number) => scans.execute(selectedProject!.id, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scans', selectedProject?.id] })
-    },
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => scans.delete(selectedProject!.id, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scans', selectedProject?.id] })
     },
   })
 
@@ -208,7 +194,7 @@ export default function Scans() {
 
         <div className="mb-12">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
-            <Sync size={20} className="text-[#22c55e]" />
+            <RefreshCw size={20} className="text-[#22c55e]" />
             Active Scans
           </h3>
           <div className="bg-[#1e293b] rounded-xl border border-slate-800 overflow-hidden">
@@ -328,7 +314,7 @@ export default function Scans() {
                             <button className="text-[#22c55e] hover:text-[#22c55e]/80 transition-colors text-sm font-medium">View Results</button>
                           )}
                           <button className="text-slate-400 hover:text-slate-200 transition-colors" title="Re-run">
-                            <Replay size={20} />
+                            <Reply size={20} />
                           </button>
                         </div>
                       </td>

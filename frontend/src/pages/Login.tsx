@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Shield, Lock, AlertCircle, ArrowRight, Visibility, VisibilityOff } from 'lucide-react'
+import { Shield, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { auth } from '../lib/api'
 
 export default function Login() {
@@ -121,7 +121,7 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 text-slate-400 hover:text-slate-200 focus:outline-none flex items-center justify-center"
                 >
-                  {showPassword ? <VisibilityOff size={20} /> : <Visibility size={20} />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>

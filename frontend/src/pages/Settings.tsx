@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings as SettingsIcon, Shield, Database, Zap, Save, Bell, Key, Globe } from 'lucide-react'
+import { Save } from 'lucide-react'
 
 export default function Settings() {
   const [orgName, setOrgName] = useState('Security Team Alpha')
@@ -11,14 +11,6 @@ export default function Settings() {
   const [selectedTemplates, setSelectedTemplates] = useState(['cves', 'vulnerabilities', 'exposures'])
 
   const templates = ['cves', 'vulnerabilities', 'exposures', 'misconfigurations', 'default-logins', 'takeovers']
-
-  const toggleTemplate = (template: string) => {
-    if (selectedTemplates.includes(template)) {
-      setSelectedTemplates(selectedTemplates.filter(t => t !== template))
-    } else {
-      setSelectedTemplates([...selectedTemplates, template])
-    }
-  }
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">

@@ -3,7 +3,6 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Server, 
-  Scan, 
   Bug, 
   Settings,
   ChevronDown,
