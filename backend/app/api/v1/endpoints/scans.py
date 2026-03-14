@@ -95,3 +95,28 @@ async def delete_scan(
     await db.delete(scan)
     await db.commit()
     return None
+
+
+@router.post("/{scan_id}/execute")
+async def execute_scan(
+    scan_id: int,
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    await get_project_for_user(project_id, current_user.id, db)
+    
+    result = await db.execute(
+        select(Scan).where(Scan.id == scan_id, Scan.project_id == project_id)
+    )
+    scan = result.scalar_one_or_none()
+    if not scan:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    
+    if scan.status == ScanStatus.RUNNING.value:
+        raise HTTPException(status_code=400, detail="Scan is already running")
+    
+    from app.services.tasks import execute_scan
+    task = execute_scan.delay(scan_id)
+    
+    return {"task_id": task.id, "status": "started"}
