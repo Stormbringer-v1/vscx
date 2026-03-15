@@ -48,7 +48,12 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    refreshProjects();
+    const token = localStorage.getItem('token');
+    if (token) {
+      refreshProjects();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   return (

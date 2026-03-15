@@ -34,7 +34,12 @@ export default function Login() {
         navigate('/dashboard')
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'An error occurred. Please try again.')
+      const detail = err.response?.data?.detail
+      if (Array.isArray(detail)) {
+        setError(detail.map((e: any) => e.msg).join('. '))
+      } else {
+        setError(detail || 'An error occurred. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

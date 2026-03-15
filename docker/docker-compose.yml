@@ -9,7 +9,6 @@ services:
       POSTGRES_DB: vscx
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U vscx"]
       interval: 5s
@@ -26,7 +25,7 @@ services:
 
   backend:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.backend
     ports:
       - "8000:8000"
@@ -34,18 +33,19 @@ services:
       DATABASE_URL: postgresql+asyncpg://vscx:vscx@postgres:5432/vscx
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
-      SECRET_KEY: changeme-in-production
+      SECRET_KEY: dev-secret-key-for-docker-testing-only-32chars
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ../backend:/app
+    command: ["/app/startup.sh", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.frontend
     ports:
       - "3000:3000"
@@ -54,18 +54,21 @@ services:
 
   celery:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.backend
-    command: celery -A app.services.celery_app worker -l info
+    command: ["/app/startup.sh", "celery", "-A", "app.services.celery_app", "worker", "-l", "info"]
     environment:
       DATABASE_URL: postgresql+asyncpg://vscx:vscx@postgres:5432/vscx
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
+      SECRET_KEY: dev-secret-key-for-docker-testing-only-32chars
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - ../backend:/app
 
 volumes:
   postgres_data:

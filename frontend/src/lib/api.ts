@@ -21,10 +21,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const hadToken = !!localStorage.getItem('token');
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect if we had a token (session expired), not on login attempts
+      if (hadToken && !error.config?.url?.includes('/auth/')) {
+        window.location.href = '/login';
+      }
     } else if (error.response) {
-      const message = error.response.data?.detail || error.response.data?.message || 'An error occurred';
+      const detail = error.response.data?.detail;
+      const message = Array.isArray(detail)
+        ? detail.map((e: any) => e.msg).join('. ')
+        : detail || error.response.data?.message || 'An error occurred';
       window.dispatchEvent(new CustomEvent('api-error', { detail: message }));
     }
     return Promise.reject(error);
@@ -33,7 +40,9 @@ api.interceptors.response.use(
 
 export const auth = {
   login: (username: string, password: string) =>
-    api.post('/auth/login', new URLSearchParams({ username, password })),
+    api.post('/auth/login', new URLSearchParams({ username, password }), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }),
   register: (username: string, email: string, password: string) =>
     api.post('/auth/register', { username, email, password }),
 };

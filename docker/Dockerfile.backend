@@ -5,10 +5,18 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
-    nmap \
-    nuclei \
-    trivy \
+    curl \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install nuclei
+RUN curl -sL https://github.com/projectdiscovery/nuclei/releases/download/v3.1.0/nuclei_3.1.0_linux_amd64.zip -o nuclei.zip && \
+    unzip nuclei.zip && \
+    mv nuclei /usr/local/bin/ && \
+    rm nuclei.zip
+
+# Install trivy
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
 
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
