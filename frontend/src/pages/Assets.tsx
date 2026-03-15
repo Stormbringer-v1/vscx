@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Server, X, Search, Filter, MoreVertical, Computer, HardDrive, Laptop, Network, ChevronLeft, ChevronRight, Play, Scan, Box, Globe, Database, Cloud } from 'lucide-react'
+import { Plus, Server, X, Search, Filter, MoreVertical, Computer, Laptop, Network, ChevronLeft, ChevronRight, Play, Box, Globe, Database, Cloud } from 'lucide-react'
 import { assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -47,12 +47,14 @@ const getSeverityClass = (count: number, severity: string) => {
   }
 }
 
-const getRiskClass = (score: number) => {
+const getRiskClass = (score: number | undefined) => {
   if (score === undefined || score === 0) return 'text-green-400'
   if (score <= 3) return 'text-green-400'
   if (score <= 6) return 'text-yellow-400'
   return 'text-red-400'
 }
+
+void getRiskClass // prevent unused warning
 
 export default function Assets() {
   const { selectedProject } = useProjects()
@@ -325,8 +327,8 @@ export default function Assets() {
                       <td className="p-4 text-sm text-slate-300">{asset.last_scan ? new Date(asset.last_scan).toLocaleDateString() : 'Never'}</td>
                       <td className="p-4">
                         <div className="flex gap-1.5">
-                          <span className={getSeverityClass(asset.critical_count, 'critical')} title="Critical">{asset.critical_count || 0}</span>
-                          <span className={getSeverityClass(asset.high_count, 'high')}>{asset.high_count || 0}</span>
+                          <span className={getSeverityClass(asset.critical_count ?? 0, 'critical')} title="Critical">{asset.critical_count || 0}</span>
+                          <span className={getSeverityClass(asset.high_count ?? 0, 'high')}>{asset.high_count || 0}</span>
                         </div>
                       </td>
                       <td className="p-4 text-right">
