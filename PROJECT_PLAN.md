@@ -194,18 +194,18 @@
 ## Phase 6: Infrastructure
 
 ### Task 6.1 — Fix Docker security
-- [ ] **Files:** `docker/Dockerfile.backend`, `docker/Dockerfile.frontend`
+- [x] **Files:** `docker/Dockerfile.backend`, `docker/Dockerfile.frontend`
 - **Fix for backend:** Add a non-root user `vscx` and switch to it after installing dependencies. Run the app as this user.
 - **Fix for frontend:** Add a non-root user for nginx. Set proper file permissions.
 - **Also:** Add `HEALTHCHECK` directive to backend Dockerfile.
 
 ### Task 6.2 — Create .env.example files
-- [ ] **Create:** `docker/.env.example`, `backend/.env.example`, `frontend/.env.example`
+- [x] **Create:** `docker/.env.example`, `backend/.env.example`, `frontend/.env.example`
 - **Contents:** Copy from existing .env files but replace all secrets/passwords with placeholder values and add comments explaining each variable.
 - **Remove** real credentials from any `.env` files that are tracked in git. Add `.env` to `.gitignore` if not already there.
 
 ### Task 6.3 — Add GitHub Actions CI
-- [ ] **Create:** `.github/workflows/ci.yml`
+- [x] **Create:** `.github/workflows/ci.yml`
 - **Pipeline steps:**
   1. Lint backend: `ruff check backend/`
   2. Type-check frontend: `cd frontend && npx tsc --noEmit`
