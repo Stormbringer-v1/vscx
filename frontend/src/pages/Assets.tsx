@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Server, X, Search, Filter, MoreVertical, Computer, HardDrive, Laptop, Network, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Server, X, Search, Filter, MoreVertical, Computer, HardDrive, Laptop, Network, ChevronLeft, ChevronRight, Play, Scan, Box, Globe, Database, Cloud } from 'lucide-react'
 import { assets } from '../lib/api'
 import { useProjects } from '../context/ProjectContext'
 
@@ -16,21 +17,28 @@ interface Asset {
   os_info?: string
   status?: string
   last_scan?: string
+  total_findings?: number
+  critical_count?: number
+  high_count?: number
 }
 
 const getAssetIcon = (type: string) => {
   switch (type) {
     case 'server': return <Computer size={18} />
-    case 'website': return <HardDrive size={18} />
     case 'workstation': return <Laptop size={18} />
-    case 'network': return <Network size={18} />
+    case 'network_device': return <Network size={18} />
+    case 'container': return <Box size={18} />
+    case 'web_application': return <Globe size={18} />
+    case 'database': return <Database size={18} />
+    case 'cloud_resource': return <Cloud size={18} />
+    case 'discovered': return <Search size={18} />
     default: return <Server size={18} />
   }
 }
 
 const getSeverityClass = (count: number, severity: string) => {
   const baseClass = 'inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md text-xs font-semibold '
-  if (count === 0) return baseClass + 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+  if (!count || count === 0) return baseClass + 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
   switch (severity) {
     case 'critical': return baseClass + 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20'
     case 'high': return baseClass + 'bg-orange-100 dark:bg-orange-500/10 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20'
@@ -39,8 +47,16 @@ const getSeverityClass = (count: number, severity: string) => {
   }
 }
 
+const getRiskClass = (score: number) => {
+  if (score === undefined || score === 0) return 'text-green-400'
+  if (score <= 3) return 'text-green-400'
+  if (score <= 6) return 'text-yellow-400'
+  return 'text-red-400'
+}
+
 export default function Assets() {
   const { selectedProject } = useProjects()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,7 +73,7 @@ export default function Assets() {
 
   const { data: assetsData, isLoading } = useQuery({
     queryKey: ['assets', selectedProject?.id],
-    queryFn: () => assets.list(selectedProject!.id),
+    queryFn: () => assets.listWithStats(selectedProject!.id),
     enabled: !!selectedProject,
   })
 
@@ -144,9 +160,12 @@ export default function Assets() {
                   className="w-full px-4 py-2 bg-[#12201b] border border-slate-700 rounded-lg text-white focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]"
                 >
                   <option value="server">Server</option>
-                  <option value="website">Website</option>
                   <option value="workstation">Workstation</option>
-                  <option value="network">Network</option>
+                  <option value="network_device">Network Device</option>
+                  <option value="container">Container</option>
+                  <option value="web_application">Web Application</option>
+                  <option value="database">Database</option>
+                  <option value="cloud_resource">Cloud Resource</option>
                 </select>
               </div>
             </div>
@@ -234,7 +253,11 @@ export default function Assets() {
               <option value="server">Server</option>
               <option value="website">Website</option>
               <option value="workstation">Workstation</option>
-              <option value="network">Network</option>
+              <option value="network_device">Network Device</option>
+              <option value="container">Container</option>
+              <option value="web_application">Web Application</option>
+              <option value="database">Database</option>
+              <option value="cloud_resource">Cloud Resource</option>
             </select>
             <button className="flex items-center justify-center p-2 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors">
               <Filter size={20} />
@@ -299,18 +322,26 @@ export default function Assets() {
                           {asset.status || 'Unknown'}
                         </span>
                       </td>
-                      <td className="p-4 text-sm text-slate-300">{asset.last_scan || 'Never'}</td>
+                      <td className="p-4 text-sm text-slate-300">{asset.last_scan ? new Date(asset.last_scan).toLocaleDateString() : 'Never'}</td>
                       <td className="p-4">
                         <div className="flex gap-1.5">
-                          <span className={getSeverityClass(0, 'critical')} title="Critical">0</span>
-                          <span className={getSeverityClass(0, 'high')}>0</span>
-                          <span className={getSeverityClass(0, 'medium')}>0</span>
+                          <span className={getSeverityClass(asset.critical_count, 'critical')} title="Critical">{asset.critical_count || 0}</span>
+                          <span className={getSeverityClass(asset.high_count, 'high')}>{asset.high_count || 0}</span>
                         </div>
                       </td>
                       <td className="p-4 text-right">
-                        <button className="text-slate-400 hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreVertical size={20} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => navigate('/scans', { state: { target: asset.ip_address || asset.hostname || asset.url } })}
+                            className="text-slate-400 hover:text-[#22c55e] opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Scan this asset"
+                          >
+                            <Play size={18} />
+                          </button>
+                          <button className="text-slate-400 hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreVertical size={20} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

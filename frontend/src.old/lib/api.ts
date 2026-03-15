@@ -21,18 +21,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const hadToken = !!localStorage.getItem('token');
       localStorage.removeItem('token');
-      // Only redirect if we had a token (session expired), not on login attempts
-      if (hadToken && !error.config?.url?.includes('/auth/')) {
-        window.location.href = '/login';
-      }
-    } else if (error.response) {
-      const detail = error.response.data?.detail;
-      const message = Array.isArray(detail)
-        ? detail.map((e: any) => e.msg).join('. ')
-        : detail || error.response.data?.message || 'An error occurred';
-      window.dispatchEvent(new CustomEvent('api-error', { detail: message }));
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -40,13 +30,9 @@ api.interceptors.response.use(
 
 export const auth = {
   login: (username: string, password: string) =>
-    api.post('/auth/login', new URLSearchParams({ username, password }), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    }),
+    api.post('/auth/login', new URLSearchParams({ username, password })),
   register: (username: string, email: string, password: string) =>
-    api.post('/auth/register', { username, email, password }),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    api.post('/auth/change-password', { current_password: currentPassword, new_password: newPassword }),
+    api.post('/auth/register', null, { params: { username, email, password } }),
 };
 
 export const projects = {
@@ -59,11 +45,10 @@ export const projects = {
 
 export const assets = {
   list: (projectId: number) => api.get('/assets/', { params: { project_id: projectId } }),
-  listWithStats: (projectId: number) => api.get('/assets/with-stats', { params: { project_id: projectId } }),
   get: (projectId: number, id: number) => api.get(`/assets/${id}`, { params: { project_id: projectId } }),
   create: (data: { name: string; asset_type: string; project_id: number; ip_address?: string; hostname?: string; url?: string; description?: string }) =>
     api.post('/assets/', data),
-  update: (projectId: number, id: number, data: { name?: string; asset_type?: string; ip_address?: string; hostname?: string; url?: string; description?: string; risk_score?: number }) =>
+  update: (projectId: number, id: number, data: Partial<{ name: string; asset_type: string; ip_address: string; hostname: string; url: string; description: string; risk_score: number }>) =>
     api.put(`/assets/${id}`, data, { params: { project_id: projectId } }),
   delete: (projectId: number, id: number) => api.delete(`/assets/${id}`, { params: { project_id: projectId } }),
 };
@@ -75,7 +60,6 @@ export const scans = {
     api.post('/scans/', data),
   delete: (projectId: number, id: number) => api.delete(`/scans/${id}`, { params: { project_id: projectId } }),
   execute: (projectId: number, id: number) => api.post(`/scans/${id}/execute`, null, { params: { project_id: projectId } }),
-  profiles: () => api.get('/scans/profiles'),
 };
 
 export const findings = {
@@ -91,5 +75,5 @@ export const vulnerabilities = {
   list: (params?: { severity?: string; limit?: number; offset?: number }) =>
     api.get('/vulnerabilities/', { params }),
   get: (cveId: string) => api.get(`/vulnerabilities/${cveId}`),
-  enrich: (cveId: string) => api.get(`/vulnerabilities/enrich/${cveId}`),
+  search: (cveId: string) => api.get('/vulnerabilities/search/cve', { params: { cve_id: cveId } }),
 };

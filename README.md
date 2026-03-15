@@ -1,87 +1,55 @@
-# vscx
+# VSCX — Vulnerability Scanner
 
-Enterprise-grade vulnerability management platform. Free. Forever.
+Open-source vulnerability management platform. Scan your infrastructure, discover vulnerabilities, get AI-powered remediation suggestions.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![License](https://img.shields.io/badge/license-AGPL-green)
-![Status](https://img.shields.io/badge/status-In%20Development-yellow)
-
-## Overview
-
-vscx is an open-source vulnerability management platform that combines powerful scanning capabilities with a modern, user-friendly interface. Built for security teams of all sizes.
 
 ## Features
 
-- 🔍 **Network Scanning** - Nmap-powered discovery and CVE correlation
-- 🌐 **Web App Scanning** - Nuclei templates for vulnerability detection
-- ☁️ **Container Security** - Trivy scanning for Docker images
-- 📊 **Smart Prioritization** - CVSS + EPSS scoring
-- 🤖 **AI Remediation** - Plain-English fix guidance (OpenAI, Anthropic, Ollama)
-- 📄 **Executive Reports** - PDF/HTML reports
-- 🏠 **Self-Hostable** - Docker Compose deployment
-
-## Screenshots
-
-### Login
-![Login](docs/images/login.png)
-
-### Dashboard
-![Dashboard](docs/images/dashboard.png)
-
-### Assets
-![Assets](docs/images/assets.png)
-
-### Findings
-![Findings](docs/images/findings.png)
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Backend | Python 3.12, FastAPI, Celery, PostgreSQL, Redis |
-| Frontend | React 18, TypeScript, Tailwind CSS |
-| Scanning | Nmap, Nuclei, Trivy |
-| AI | OpenAI, Anthropic, Ollama |
-| Infra | Docker, Docker Compose |
+- Network scanning (Nmap), web vulnerability scanning (Nuclei), container scanning (Trivy)
+- AI-powered remediation suggestions (OpenAI, Anthropic, Ollama)
+- CVE enrichment from NVD, OSV, EPSS databases
+- Dark-themed modern web UI
+- Scan profiles: Quick, Standard, Aggressive, Container
+- Asset discovery and tracking
+- First-login password change
+- Audit logging
 
 ## Quick Start
 
-### Prerequisites
-
-- Docker & Docker Compose
-- PostgreSQL (included)
-- Redis (included)
-- Node.js 18+ (for local development)
-
-### Development Setup
+### Option 1: Install Script (Recommended for Ubuntu/Debian)
 
 ```bash
-# Clone the repository
-git clone https://github.com/Stormbringer-v1/vscx.git
+git clone https://github.com/your-repo/vscx.git
 cd vscx
-
-# Start backend (API + Workers)
-cd backend
-cp .env.example .env
-# Edit .env with your settings
-docker compose up -d
-
-# Start frontend
-cd ../frontend
-npm install
-npm run dev
+sudo bash install.sh
 ```
 
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+The script will:
+- Install PostgreSQL, Redis, Nginx, Python 3.12
+- Install Nmap, Nuclei, Trivy scanners
+- Set up the application with systemd services
+- Configure Nginx reverse proxy
+- Print admin credentials on first boot
 
-### Production with Docker Compose
+Check admin credentials:
+```bash
+journalctl -u vscx-backend --no-pager | grep -A5 "Initial Admin"
+```
+
+### Option 2: Docker
+
+See [docker/README.md](docker/README.md)
 
 ```bash
-# From project root
-docker compose -f docker/docker-compose.yml up -d
+cd docker
+docker-compose up -d
+```
+
+Check logs for admin credentials:
+```bash
+docker-compose logs backend | grep -A5 "Initial Admin"
 ```
 
 ## Configuration
@@ -90,11 +58,21 @@ docker compose -f docker/docker-compose.yml up -d
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | postgresql://postgres:postgres@localhost:5432/vscx |
-| `REDIS_URL` | Redis connection string | redis://localhost:6379/0 |
-| `SECRET_KEY` | JWT secret key | change-me-in-production |
-| `AI_PROVIDER` | AI provider (openai/anthropic/ollama) | openai |
-| `AI_API_KEY` | API key for AI provider | - |
+| `DATABASE_URL` | PostgreSQL connection string | postgresql+asyncpg://vscx:vscx@postgres:5432/vscx |
+| `REDIS_URL` | Redis connection string | redis://redis:6379/0 |
+| `CELERY_BROKER_URL` | Celery broker URL | redis://redis:6379/1 |
+| `SECRET_KEY` | JWT secret key | (required) |
+| `ALLOW_PRIVATE_TARGETS` | Allow scanning private networks (10.x, 172.16.x, 192.168.x) | true |
+| `NVD_API_KEY` | NVD API key for faster CVE lookups | - |
+| `OPENAI_API_KEY` | OpenAI API key for AI remediation | - |
+| `ANTHROPIC_API_KEY` | Anthropic API key for AI remediation | - |
+| `OLLAMA_BASE_URL` | Ollama server URL | http://localhost:11434 |
+
+## Architecture
+
+- **Backend**: FastAPI + PostgreSQL + Redis + Celery
+- **Frontend**: React + TypeScript + Tailwind CSS
+- **Scanning**: Nmap, Nuclei, Trivy
 
 ## Project Structure
 
@@ -114,69 +92,23 @@ vscx/
 │   │   ├── lib/
 │   │   └── context/
 │   └── public/
-├── docs/            # Documentation
-└── docker/          # Docker configs
+├── docker/          # Docker configs
+└── install.sh      # Native installation script
 ```
 
-## API Endpoints
+## Development
 
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login and get JWT token
+```bash
+# Backend tests
+cd backend && python -m pytest tests/ -v
 
-### Projects
-- `GET /api/v1/projects` - List projects
-- `POST /api/v1/projects` - Create project
-- `DELETE /api/v1/projects/{id}` - Delete project
+# Frontend type check
+cd frontend && npx tsc --noEmit
 
-### Assets
-- `GET /api/v1/projects/{id}/assets` - List assets
-- `POST /api/v1/projects/{id}/assets` - Add asset
-- `DELETE /api/v1/projects/{id}/assets/{id}` - Delete asset
-
-### Scans
-- `GET /api/v1/projects/{id}/scans` - List scans
-- `POST /api/v1/projects/{id}/scans` - Create scan
-- `POST /api/v1/projects/{id}/scans/{id}/execute` - Run scan
-- `DELETE /api/v1/projects/{id}/scans/{id}` - Delete scan
-
-### Findings
-- `GET /api/v1/projects/{id}/findings` - List findings
-- `PATCH /api/v1/projects/{id}/findings/{id}` - Update finding status
-
-### CVE Data
-- `GET /api/v1/cve/nvd/{cve_id}` - Get NVD CVE details
-- `GET /api/v1/cve/osv/{cve_id}` - Get OSV CVE details
-- `GET /api/v1/cve/epss/{cve_id}` - Get EPSS score
-
-## Development Status
-
-| Feature | Status |
-|---------|--------|
-| User Authentication | ✅ Complete |
-| Project Management | ✅ Complete |
-| Asset Management | ✅ Complete |
-| Nmap Scanner | ✅ Complete |
-| Nuclei Scanner | ✅ Complete |
-| Trivy Scanner | ✅ Complete |
-| NVD Integration | ✅ Complete |
-| OSV Integration | ✅ Complete |
-| EPSS Integration | ✅ Complete |
-| AI Remediation | ✅ Complete |
-| Modern UI | ✅ Complete |
-| PDF Reports | 🔄 Planned |
-| Email Notifications | 🔄 Planned |
-| Webhooks | 🔄 Planned |
-| SAML/OAuth SSO | 🔄 Planned |
+# Check celery worker logs for scan issues
+docker-compose logs --tail=50 celery
+```
 
 ## License
 
-AGPL v3 - See LICENSE file
-
-## Contributing
-
-Contributions welcome! Please read our contributing guidelines before submitting PRs.
-
----
-
-Built with ❤️ for the security community
+AGPL v3 — See LICENSE file

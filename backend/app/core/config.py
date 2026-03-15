@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
 
-    ALLOW_PRIVATE_TARGETS: bool = False
+    ALLOW_PRIVATE_TARGETS: bool = True
 
     NVD_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None

@@ -31,7 +31,11 @@ export default function Login() {
       } else {
         const response = await auth.login(formData.username, formData.password)
         localStorage.setItem('token', response.data.access_token)
-        navigate('/dashboard')
+        if (response.data.must_change_password) {
+          navigate('/change-password')
+        } else {
+          navigate('/dashboard')
+        }
       }
     } catch (err: any) {
       const detail = err.response?.data?.detail
@@ -163,17 +167,7 @@ export default function Login() {
 
           <div className="mt-4 pt-6 border-t border-slate-700/50 text-center">
             <p className="text-slate-400 text-sm">
-              {isRegister ? 'Already have an account? ' : "Don't have an account? "}
-              <button
-                onClick={() => {
-                  setIsRegister(!isRegister)
-                  setError('')
-                  setSuccess('')
-                }}
-                className="text-[#22c55e] hover:underline font-medium"
-              >
-                {isRegister ? 'Sign In' : 'Request Access'}
-              </button>
+              Contact your administrator to create an account.
             </p>
           </div>
         </div>

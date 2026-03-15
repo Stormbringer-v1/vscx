@@ -11,9 +11,12 @@ from app.models.base import Project, Scan, ScanStatus
 from app.api.v1.endpoints.auth import get_current_user
 from app.models.base import User
 from app.schemas.scan import ScanCreate, ScanUpdate, ScanResponse
+from app.services.scan_profiles import SCAN_PROFILES
 
 router = APIRouter(prefix="/scans", tags=["scans"])
 limiter = Limiter(key_func=get_remote_address)
+
+VALID_SCAN_TYPES = list(SCAN_PROFILES.keys()) + ["nmap", "nuclei", "trivy"]
 
 
 async def get_project_for_user(project_id: int, user_id: int, db: AsyncSession):
@@ -39,6 +42,11 @@ async def list_scans(
     return result.scalars().all()
 
 
+@router.get("/profiles")
+async def get_scan_profiles():
+    return {name: {"label": p["label"], "description": p["description"]} for name, p in SCAN_PROFILES.items()}
+
+
 @router.post("/", response_model=ScanResponse, status_code=status.HTTP_201_CREATED)
 async def create_scan(
     scan: ScanCreate,
@@ -46,6 +54,13 @@ async def create_scan(
     current_user: User = Depends(get_current_user)
 ):
     from app.services.scanners import validate_targets
+    
+    if scan.scan_type not in VALID_SCAN_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid scan_type. Must be one of: {', '.join(VALID_SCAN_TYPES)}"
+        )
+    
     is_valid, error_msg, _ = validate_targets(scan.targets)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
