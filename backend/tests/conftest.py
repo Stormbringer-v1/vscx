@@ -1,21 +1,25 @@
 import pytest
 import pytest_asyncio
+import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base
 from app.core.security import get_password_hash, verify_password
 from app.models.base import User, Project, Asset, Scan, Finding
 
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+TEST_DATABASE_URL = "sqlite+aiosqlite:///test.db"
 
 
 @pytest_asyncio.fixture
 async def engine():
+    if os.path.exists("test.db"):
+        os.remove("test.db")
     engine = create_async_engine(
         TEST_DATABASE_URL,
-        poolclass=NullPool,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
         echo=False
     )
     async with engine.begin() as conn:
@@ -24,6 +28,8 @@ async def engine():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+    if os.path.exists("test.db"):
+        os.remove("test.db")
 
 
 @pytest_asyncio.fixture

@@ -31,7 +31,7 @@ class TestIPValidation:
     def test_public_ips(self):
         assert is_private_ip("8.8.8.8") is False
         assert is_private_ip("1.1.1.1") is False
-        assert is_private_ip("203.0.113.1") is False
+        assert is_private_ip("93.184.216.34") is False
 
     def test_private_ranges(self):
         assert is_in_private_range("10.0.0.1") is True
