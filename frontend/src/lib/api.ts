@@ -23,6 +23,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
+    } else if (error.response) {
+      const message = error.response.data?.detail || error.response.data?.message || 'An error occurred';
+      window.dispatchEvent(new CustomEvent('api-error', { detail: message }));
     }
     return Promise.reject(error);
   }

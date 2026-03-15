@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 from typing import List, Optional
 
 from app.core.database import get_db
+from app.core.audit import log_finding_status_change
 from app.models.base import Project, Finding
 from app.api.v1.endpoints.auth import get_current_user
 from app.models.base import User
@@ -82,12 +83,17 @@ async def update_finding(
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found")
     
+    old_status = finding.status
     update_data = finding_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(finding, field, value)
     
     await db.commit()
     await db.refresh(finding)
+    
+    if 'status' in update_data and update_data['status'] != old_status:
+        log_finding_status_change(finding_id, current_user.id, old_status, update_data['status'])
+    
     return finding
 
 

@@ -10,6 +10,7 @@ from slowapi.util import get_remote_address
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash
 from app.core.config import settings
+from app.core.audit import log_login_attempt
 from app.models.base import User
 from app.schemas.user import UserRegister
 
@@ -51,8 +52,10 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(form_data.password, user.hashed_password):
+        log_login_attempt(form_data.username, False, request.client.host if request.client else None)
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     
+    log_login_attempt(form_data.username, True, request.client.host if request.client else None)
     access_token = create_access_token(data={"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
 

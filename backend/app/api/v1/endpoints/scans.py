@@ -6,6 +6,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from app.core.database import get_db
+from app.core.audit import log_scan_execution
 from app.models.base import Project, Scan, ScanStatus
 from app.api.v1.endpoints.auth import get_current_user
 from app.models.base import User
@@ -130,6 +131,8 @@ async def execute_scan(
     is_valid, error_msg, _ = validate_targets(scan.targets)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
+    
+    log_scan_execution(scan_id, current_user.id, scan.project_id, scan.name)
     
     from app.services.tasks import execute_scan
     task = execute_scan.delay(scan_id)

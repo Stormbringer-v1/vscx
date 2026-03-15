@@ -219,17 +219,17 @@
 ## Phase 7: Nice-to-Have Features (Low Priority)
 
 ### Task 7.1 — Add error boundaries and toast notifications to frontend
-- [ ] Wrap the app in a React error boundary
-- [ ] Add a simple toast notification system for API errors and success messages
-- [ ] Show user-visible errors when API calls fail (currently silent)
+- [x] Wrap the app in a React error boundary
+- [x] Add a simple toast notification system for API errors and success messages
+- [x] Show user-visible errors when API calls fail (currently silent)
 
 ### Task 7.2 — Add audit logging to backend
-- [ ] Log scan executions, finding status changes, and login attempts
-- [ ] Use Python's `logging` module with structured JSON output
+- [x] Log scan executions, finding status changes, and login attempts
+- [x] Use Python's `logging` module with structured JSON output
 
 ### Task 7.3 — Implement header search functionality
-- [ ] Wire up the search input in `Header.tsx` to search across assets, findings, and scans
-- [ ] Show results in a dropdown below the search input
+- [x] Wire up the search input in `Header.tsx` to search across assets, findings, and scans
+- [x] Show results in a dropdown below the search input
 
 ---
 
